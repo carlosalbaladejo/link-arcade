@@ -1,6 +1,6 @@
 # Publishing a release
 
-GitHub Pages serves the static site from `main:/docs`. Changes there are deployed when pushed to `main`. The Android build uses the same local game files.
+GitHub Pages serves the static site from `main:/docs`. Changes there are deployed when pushed to `main`. Android bundles a pinned A Little Drive revision, from a sibling checkout if available or from GitHub otherwise. Publish that game revision before releasing an Android build that depends on it.
 
 1. Update the version in `AndroidManifest.xml` and increment `versionCode`. Add a matching `## [VERSION]` entry at the top of `CHANGELOG.md`.
 2. Build and test with `./build-apk.sh`. For an in-place upgrade, sign with the same private key used for the preceding release. Never commit signing keys, Android credentials or generated builds.

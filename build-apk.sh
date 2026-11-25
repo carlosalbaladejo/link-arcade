@@ -11,13 +11,21 @@ if [[ ! -f "$jsoup" ]]; then
     curl -fLsS https://repo.maven.apache.org/maven2/org/jsoup/jsoup/1.18.3/jsoup-1.18.3.jar -o "$jsoup"
 fi
 echo "5be1ccd3228ae5fd6eed1bd6d827bac2bc65b91c20e9957d16ea65f739f15302  $jsoup" | sha256sum --check
-driving_revision=94ee968da4c3aaa6ff106946c5fde8ff84569827
+driving_revision=16c99aed1724210ad3357f69f6e307a66de9abb0
 driving_archive="lib/little-drive-$driving_revision.tar.gz"
 if [[ ! -f "$driving_archive" ]]; then
-    curl -fLsS "https://codeload.github.com/carlosalbaladejo/little-drive/tar.gz/$driving_revision" -o "$driving_archive.part"
+    if git -C ../little-drive cat-file -e "$driving_revision^{commit}" 2>/dev/null; then
+        git -C ../little-drive archive --format=tar.gz --prefix="little-drive-$driving_revision/" \
+            "$driving_revision" > "$driving_archive.part"
+    else
+        curl -fLsS "https://codeload.github.com/carlosalbaladejo/little-drive/tar.gz/$driving_revision" -o "$driving_archive.part"
+    fi
     mv "$driving_archive.part" "$driving_archive"
 fi
-echo "8aeece0336f043531565558296b4bd3c2725524631f63c1aec10e564a50c2e3a  $driving_archive" | sha256sum --check
+# GitHub and git archive use the same tar contents, but not necessarily the same gzip wrapper.
+gzip -dc "$driving_archive" | sha256sum --check <(
+    echo "0e818623a0a10536b6fcce796811475eee4cdca9c0af6f1bdc4af5644d9cc03c  -"
+)
 if [[ ! -f "$keystore" ]]; then
     keytool -genkeypair -keystore "$keystore" -storepass android -keypass android \
         -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname 'CN=Android Debug,O=Android,C=US'

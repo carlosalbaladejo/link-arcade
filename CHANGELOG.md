@@ -1,7 +1,9 @@
 # Changelog
 
-## Unreleased
+## [0.1.13]
 
+- Added a lighter rendering profile for A Little Drive on Fire TV, with less graphics work per frame and no change to driving controls or saves.
+- Avoided building unused touch overlays on TV and switched compatible games to launcher input as soon as they load.
 - Moved the driving game to its own repository as A Little Drive. The browser catalog opens the standalone game by URL; the Android build retains an offline copy from a pinned revision.
 - Added a GitHub repository link to the web catalog. Saved game links now stay in sync across open tabs in the same browser.
 

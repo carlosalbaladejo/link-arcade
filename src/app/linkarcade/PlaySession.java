@@ -39,7 +39,7 @@ final class PlaySession {
     private View error;
     private WebMessagePort drivingPort;
     private boolean ready, closed;
-    private Set<String> last = Collections.emptySet();
+    private Set<String> last;
     private Set<String> held = Collections.emptySet();
 
     PlaySession(MainActivity activity, Game game, boolean tv, boolean showTouch) throws Exception {
@@ -55,6 +55,10 @@ final class PlaySession {
         web.getSettings().setAllowFileAccess(false);
         web.getSettings().setAllowContentAccess(false);
         web.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+        if (tv && game.driving()) {
+            WebSettings settings = web.getSettings();
+            settings.setUserAgentString(settings.getUserAgentString() + " LinkArcadeTV");
+        }
         web.setWebChromeClient(new WebChromeClient());
         web.setWebViewClient(new Browser());
 
@@ -64,9 +68,12 @@ final class PlaySession {
         viewport.addView(web, new FrameLayout.LayoutParams(-1, -1));
         content = viewport;
 
-        toggle = TouchPad.overlayButton(style, "Show touch controls");
-        touch = new TouchPad(style, activity::touchButton, game.driving());
-        if (!tv) {
+        if (tv) {
+            toggle = null;
+            touch = null;
+        } else {
+            toggle = TouchPad.overlayButton(style, "Show touch controls");
+            touch = new TouchPad(style, activity::touchButton, game.driving());
             FrameLayout controls = new FrameLayout(activity);
             controls.setMotionEventSplittingEnabled(true);
             viewport.addView(controls, new FrameLayout.LayoutParams(-1, -1));
@@ -96,8 +103,8 @@ final class PlaySession {
             FrameLayout.LayoutParams menu = new FrameLayout.LayoutParams(-2, -2, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
             menu.topMargin = style.dp(6);
             controls.addView(header, menu);
+            showTouch(showTouch);
         }
-        showTouch(showTouch);
     }
 
     void start() {
@@ -105,7 +112,7 @@ final class PlaySession {
         load();
     }
 
-    private boolean touchVisible() { return touch.getVisibility() == View.VISIBLE; }
+    private boolean touchVisible() { return touch != null && touch.getVisibility() == View.VISIBLE; }
 
     private void showTouch(boolean visible) {
         visible = visible && !tv && game.compatible();
@@ -172,9 +179,10 @@ final class PlaySession {
     }
 
     void actions(Set<String> pressed) {
-        held = new LinkedHashSet<>(pressed);
-        if (!ready || closed || !game.compatible() || last.equals(held)
-                || web.getUrl() == null || !allowed(web.getUrl())) return;
+        if (!held.equals(pressed)) held = new LinkedHashSet<>(pressed);
+        if (!ready || closed || !game.compatible() || held.equals(last)) return;
+        String url = web.getUrl();
+        if (url == null || !allowed(url)) return;
         try {
             String data = new JSONObject().put("type", "tv-game-input").put("version", 1)
                     .put("pressed", new JSONArray(held)).toString();
@@ -186,7 +194,7 @@ final class PlaySession {
     }
 
     void suspend() {
-        resetTouchPressed(touch);
+        if (touch != null) resetTouchPressed(touch);
         web.onPause();
     }
 
@@ -236,7 +244,8 @@ final class PlaySession {
             if (closed) return;
             ready = false;
             disconnectDrivingControls();
-            last = Collections.emptySet();
+            // A neutral first snapshot lets compatible games switch off their own input polling.
+            last = null;
             activity.clearInputs();
             if (!allowed(url)) showError("The page is outside the saved site.");
         }
