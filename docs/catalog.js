@@ -1,4 +1,4 @@
-import { bundled } from './games.js';
+import { bundled, featured } from './games.js';
 
 const libraryKey = 'link-arcade-library-v1';
 const form = document.querySelector('#add-game');
@@ -73,7 +73,7 @@ async function inspect(url) {
     }
 }
 
-function card(game) {
+function card(game, removable = false) {
     const article = document.createElement('article');
     article.className = 'card';
     const cover = document.createElement('div');
@@ -103,6 +103,8 @@ function card(game) {
     if (!game.id) {
         play.target = '_blank';
         play.rel = 'noopener noreferrer';
+    }
+    if (removable) {
         const remove = document.createElement('button');
         remove.type = 'button';
         remove.className = 'remove';
@@ -121,7 +123,9 @@ function card(game) {
 }
 
 function render() {
-    grid.replaceChildren(...[...bundled, ...imported].map(card));
+    const savedCards = imported.filter(game => !featured.some(entry => entry.url === game.url));
+    grid.replaceChildren(...[...featured, ...bundled].map(game => card(game)),
+        ...savedCards.map(game => card(game, true)));
 }
 
 form.addEventListener('submit', async event => {
@@ -132,7 +136,7 @@ form.addEventListener('submit', async event => {
         const url = webUrl(input.value.trim());
         status.textContent = 'Looking up game details…';
         const entry = await inspect(url);
-        if (imported.some(game => game.url === entry.url)) {
+        if ([...featured, ...imported].some(game => game.url === entry.url)) {
             status.textContent = 'This game is already in your library.';
             return;
         }

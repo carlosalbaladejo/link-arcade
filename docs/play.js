@@ -1,4 +1,4 @@
-import { bundled } from './games.js';
+import { bundled, littleDriveUrl } from './games.js';
 
 const standardButtons = {
     south: 0, east: 1, west: 2, north: 3, left_shoulder: 4, right_shoulder: 5,
@@ -117,8 +117,11 @@ async function launch(game) {
     requestAnimationFrame(tick);
 }
 
-const game = bundled.find(entry => entry.id === new URLSearchParams(location.search).get('game'));
-if (game) {
+const gameId = new URLSearchParams(location.search).get('game');
+const game = bundled.find(entry => entry.id === gameId);
+if (gameId === 'drive') {
+    location.replace(littleDriveUrl);
+} else if (game) {
     launch(game).catch(() => { status.textContent = 'Could not load the game. Return to the catalog and try again.'; });
 } else {
     status.textContent = 'Game not found.';

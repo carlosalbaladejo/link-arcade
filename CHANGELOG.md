@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Moved the driving game to its own repository as A Little Drive. The browser catalog opens the standalone game by URL; the Android build retains an offline copy from a pinned revision.
 - Added a GitHub repository link to the web catalog. Saved game links now stay in sync across open tabs in the same browser.
 
 ## [0.1.12]

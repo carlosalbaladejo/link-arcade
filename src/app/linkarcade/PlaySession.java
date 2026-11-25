@@ -277,6 +277,7 @@ final class PlaySession {
                     case "/driving/game.json": mime = "application/json"; break;
                     case "/driving/cover.jpg": mime = "image/jpeg"; break;
                     case "/driving/drive.js":
+                    case "/driving/browser-controls.js":
                     case "/driving/world.js":
                     case "/driving/city.js":
                     case "/driving/traffic.js":

@@ -1,11 +1,15 @@
-export const bundled = [
+export const littleDriveUrl = 'https://carlosalbaladejo.github.io/little-drive/';
+
+export const featured = [
     {
-        id: 'drive',
-        title: 'Paseo Costero',
+        url: littleDriveUrl,
+        title: 'A Little Drive',
         description: 'Drive through a coastal city that expands as you explore.',
-        directory: './driving-game/',
-        cover: './driving-game/cover.jpg',
+        cover: littleDriveUrl + 'cover.jpg',
     },
+];
+
+export const bundled = [
     {
         id: 'controls',
         title: 'Controller Test',
