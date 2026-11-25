@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Jugar · Link Arcade</title>
+  <link rel="stylesheet" href="./arcade.css">
+  <script type="module" src="./play.js"></script>
+</head>
+<body class="player">
+  <header class="top">
+    <a class="brand" href="./">← Catálogo</a>
+    <span id="playing"></span>
+    <button id="touch-toggle" aria-controls="touch-controls" aria-pressed="false" hidden>Controles táctiles</button>
+  </header>
+  <main class="play-area">
+    <p id="play-status" role="status">Cargando juego…</p>
+    <iframe id="game" title="Juego" allow="autoplay" hidden></iframe>
+    <div id="touch-controls" aria-label="Controles táctiles" hidden></div>
+  </main>
+</body>
+</html>

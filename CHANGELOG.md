@@ -1,0 +1,53 @@
+# Changelog
+
+## [0.1.11]
+
+- Published Link Arcade's source, playable browser catalog, example games and game compatibility specification. The browser catalog supports local URL bookmarks and keyboard, touch and standard controller input in the included games.
+- Paseo Costero now has collisions with roadside scenery, trees and bridge rails. Hold the horn button for a continuous sound; releasing it, pausing or leaving the game stops it.
+
+## [0.1.10]
+
+- Paseo Costero now generates more towns in every direction. Added eastern bridges, extended roads and updated traffic and the minimap to follow the new network.
+
+## [0.1.9]
+
+- Added the town of Valdecerro, a signed route, curved roads, an optional minimap and a compass. Softened the gravel sound.
+
+## [0.1.8]
+
+- Added new radio tracks, improved vehicle and surface audio, and added water recovery and more varied woodland. Added a driving timer and optional health display.
+
+## [0.1.7]
+
+- Tightened parking bays, moved the radio display next to the location, and removed the separate in-game horn button. Controller and keyboard horn bindings remain.
+
+## [0.1.6]
+
+- Added marked parking bays to Paseo Costero, with visual and audio feedback for completing a full stop inside a bay.
+
+## [0.1.5]
+
+- Bundled Paseo Costero as the first offline game, with city traffic, service vehicles, radio, driving effects and optional vehicle health.
+- Refresh imported game covers when selecting a game, retaining the previous cover if refresh fails.
+
+## [0.1.4]
+
+- Allowed HTTP game links after an explicit unencrypted-connection warning. HTTPS imports still cannot redirect to HTTP.
+
+## [0.1.3]
+
+- Added the first bundled version of Paseo Costero, a procedural 3D driving game with local progress. Added an in-game switch between touch and physical controls in the bundled game.
+
+## [0.1.2]
+
+- Separated and outlined the touch controls so that the game viewport remains full-size beneath them.
+
+## [0.1.1]
+
+- Reworked the touch D-pad and face buttons, preserving Start, Select and existing mappings.
+
+## [0.1.0]
+
+- Introduced the Android launcher, URL imports, a persistent local library, controller remapping and an offline controller test.
+
+[0.1.11]: https://github.com/carlosalbaladejo/link-arcade/releases/tag/v0.1.11

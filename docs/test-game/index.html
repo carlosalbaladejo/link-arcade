@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="tv-game-manifest" href="./game.json">
+<title>Prueba de mandos</title>
+<style>
+  :root { color-scheme: dark; font: 500 14px system-ui,sans-serif; background: #0b141f; color: #edf5f7; }
+  * { box-sizing: border-box; }
+  body { margin: 0; height: 100vh; display: grid; padding: clamp(5px,2vh,18px) clamp(8px,3vw,32px);
+    grid-template-rows: auto minmax(16px,1fr); gap: clamp(4px,1.3vh,12px); overflow: hidden; }
+  header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  h1 { margin: 0; font-size: clamp(15px,4.3vh,30px); }
+  output { color: #90f2ce; text-align: right; font-size: clamp(12px,3vh,17px); }
+  main { position: relative; overflow: hidden; border: 1px solid #355166; border-radius: 12px;
+    background-color: #142638; background-image: linear-gradient(#fff1 1px,transparent 1px),
+    linear-gradient(90deg,#fff1 1px,transparent 1px); background-size: 24px 24px; }
+  #marker { width: 19px; height: 19px; border-radius: 5px; position: absolute;
+    background: #90f2ce; left: 50%; top: 50%; transform: translate(-50%,-50%); }
+  main.pulse #marker { box-shadow: 0 0 0 8px #ffce6a77; }
+  #pause { position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: grid; place-content: center; background: #0b141fbc;
+    font-size: clamp(15px,6vh,34px); font-weight: 800; }
+  #pause[hidden] { display: none; }
+  footer { position: absolute; top: max(58px, 12vh); left: clamp(8px,3vw,32px); right: clamp(8px,3vw,32px);
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; pointer-events: none; }
+  kbd { background: #0b141f; border: 1px solid #355166; border-radius: 5px; padding: 2px clamp(3px,1vw,9px);
+    font: 700 clamp(11px,2.6vh,14px) system-ui,sans-serif; }
+  kbd.active { background: #90f2ce; color: #132226; }
+</style>
+<body>
+<header><h1>Prueba de mandos</h1><output id="status" aria-live="polite">Sin pulsaciones</output></header>
+<main id="field" aria-label="Área de movimiento"><span id="marker"></span><strong id="pause" hidden>En pausa</strong></main>
+<footer id="keys" aria-label="Botones pulsados"></footer>
+<script>
+  const labels = {
+    move_up: "↑", move_down: "↓", move_left: "←", move_right: "→",
+    jump: "Saltar", mark: "Pulso", home: "Centrar", color: "Cambiar color", pause: "Start", panel: "Select"
+  };
+  const keyboard = {
+    ArrowUp: "move_up", ArrowDown: "move_down", ArrowLeft: "move_left", ArrowRight: "move_right",
+    Space: "jump", KeyB: "mark", KeyX: "home", KeyY: "color", Enter: "pause", ShiftRight: "panel"
+  };
+  const footer = document.querySelector("#keys");
+  const badges = new Map(Object.entries(labels).map(([id, label]) => {
+    const badge = document.createElement("kbd");
+    badge.textContent = label;
+    footer.append(badge);
+    return [id, badge];
+  }));
+  const status = document.querySelector("#status");
+  const field = document.querySelector("#field");
+  const marker = document.querySelector("#marker");
+  const veil = document.querySelector("#pause");
+  const accents = ["#90f2ce", "#ffce6a", "#9bafff"];
+  let web = new Set(), keys = new Set(), active = new Set();
+  let paused = false, showNames = false, x = 50, y = 50, tint = 0, jumpUntil = 0;
+  let priorTime = performance.now();
+
+  function update() {
+    const next = new Set([...web, ...keys]);
+    const fired = id => next.has(id) && !active.has(id);
+    if (fired("pause")) paused = !paused;
+    if (fired("panel")) showNames = !showNames;
+    if (!paused) {
+      if (fired("jump")) jumpUntil = performance.now() + 230;
+      if (fired("home")) x = y = 50;
+      if (fired("color")) tint = (tint + 1) % accents.length;
+    }
+    active = next;
+    for (const [id, badge] of badges) badge.classList.toggle("active", active.has(id));
+    const names = [...active].map(id => labels[id]);
+    status.textContent = names.length ? names.join(" + ") : showNames ? "Panel activo · sin pulsaciones" : "Sin pulsaciones";
+    veil.hidden = !paused;
+    field.classList.toggle("pulse", !paused && active.has("mark"));
+  }
+
+  window.addEventListener("message", ({ data }) => {
+    if (typeof data !== "string") return;
+    try {
+      const message = JSON.parse(data);
+      if (message?.type !== "tv-game-input" || message.version !== 1 || !Array.isArray(message.pressed)) return;
+      web = new Set(message.pressed.filter(id => badges.has(id)));
+      update();
+    } catch { /* unrelated window message */ }
+  });
+  window.addEventListener("keydown", event => {
+    if (!keyboard[event.code]) return;
+    event.preventDefault();
+    if (event.repeat) return;
+    keys.add(keyboard[event.code]);
+    update();
+  });
+  window.addEventListener("keyup", event => {
+    if (!keyboard[event.code]) return;
+    keys.delete(keyboard[event.code]);
+    update();
+  });
+  function clear() {
+    web.clear();
+    keys.clear();
+    update();
+  }
+  window.addEventListener("blur", clear);
+  document.addEventListener("visibilitychange", () => { if (document.hidden) clear(); });
+  function frame(time) {
+    const speed = Math.min(time - priorTime, 35) * .08;
+    priorTime = time;
+    if (!paused) {
+      x += speed * (Number(active.has("move_right")) - Number(active.has("move_left")));
+      y += speed * (Number(active.has("move_down")) - Number(active.has("move_up")));
+      x = Math.max(3, Math.min(97, x));
+      y = Math.max(8, Math.min(92, y));
+      marker.style.left = x + "%";
+      marker.style.top = y + "%";
+      marker.style.transform = time < jumpUntil ? "translate(-50%,-50%) scale(1.45)" : "translate(-50%,-50%)";
+      marker.style.background = accents[tint];
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+</script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101822">
+  <title>Link Arcade</title>
+  <link rel="stylesheet" href="./arcade.css">
+  <script type="module" src="./catalog.js"></script>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="./"><span aria-hidden="true">✦</span> Link Arcade</a>
+    <a id="android" href="https://github.com/carlosalbaladejo/link-arcade/releases/latest">Descargar para Android</a>
+  </header>
+  <main class="catalog">
+    <section class="intro">
+      <h1>Tu sala de juegos.</h1>
+      <p>Juega en el navegador con teclado, mando o controles táctiles.</p>
+    </section>
+    <section aria-labelledby="games-heading">
+      <h2 id="games-heading">Juegos</h2>
+      <div class="grid" id="games"></div>
+    </section>
+    <section class="imports" aria-labelledby="add-heading">
+      <h2 id="add-heading">Añadir por URL</h2>
+      <form id="add-game">
+        <label for="game-url">Enlace a la página del juego</label>
+        <div class="form-row">
+          <input id="game-url" name="url" type="url" required placeholder="https://example.com/juego/">
+          <button type="submit">Añadir</button>
+        </div>
+        <p id="import-status" role="status"></p>
+      </form>
+    </section>
+  </main>
+  <footer><a href="https://github.com/carlosalbaladejo/link-arcade/blob/main/spec/game-compatibility.md">Crea tus propios juegos</a></footer>
+</body>
+</html>

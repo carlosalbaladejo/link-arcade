@@ -1,0 +1,15 @@
+{
+    "version": 1,
+    "title": "Paseo Costero",
+    "cover": "./cover.jpg",
+    "actions": [
+        {"id":"left","label":"Girar a la izquierda","default":"dpad_left"},
+        {"id":"right","label":"Girar a la derecha","default":"dpad_right"},
+        {"id":"accelerate","label":"Acelerar","default":"south"},
+        {"id":"brake","label":"Frenar / marcha atrás","default":"west"},
+        {"id":"horn","label":"Claxon","default":"east"},
+        {"id":"radio","label":"Cambiar de emisora","default":"north"},
+        {"id":"pause","label":"Pausar / reanudar","default":"start"},
+        {"id":"menu","label":"Menú del juego","default":"select"}
+    ]
+}

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Link Arcade game manifest v1",
+  "type": "object",
+  "required": ["version", "title", "actions"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "title": { "type": "string", "minLength": 1, "maxLength": 80, "pattern": "\\S" },
+    "cover": {
+      "description": "Image URL relative to the manifest, or an absolute URL. The resolved cover must share the game page origin, including after redirects.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^\\S+$",
+      "format": "uri-reference"
+    },
+    "actions": {
+      "description": "Actions in the order shown by the mapping screen. IDs and assigned defaults must each be unique (checked by the importer).",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "contains": {
+        "type": "object",
+        "required": ["id", "default"],
+        "properties": {
+          "id": { "const": "pause" },
+          "default": { "const": "start" }
+        }
+      },
+      "maxContains": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "label"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,31}$" },
+          "label": { "type": "string", "minLength": 1, "maxLength": 48, "pattern": "\\S" },
+          "default": {
+            "enum": [
+              "dpad_up", "dpad_down", "dpad_left", "dpad_right",
+              "south", "east", "west", "north",
+              "left_shoulder", "right_shoulder", "left_trigger", "right_trigger",
+              "left_stick", "right_stick", "start", "select"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
