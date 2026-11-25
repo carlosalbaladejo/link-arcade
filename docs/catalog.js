@@ -138,11 +138,18 @@ form.addEventListener('submit', async event => {
         }
         const saved = saveLibrary([...imported, entry]);
         form.reset();
-        status.textContent = saved ? 'Game added.' : 'Game added for this visit only. The browser could not save it.';
+        status.textContent = saved ? 'Game saved in this browser.' : 'Game added for this visit only. The browser could not save it.';
     } catch (error) {
         status.textContent = error.message;
     } finally {
         submit.disabled = false;
+    }
+});
+
+window.addEventListener('storage', event => {
+    if ((event.key === libraryKey || event.key === null) && event.storageArea === localStorage) {
+        imported = readLibrary();
+        render();
     }
 });
 

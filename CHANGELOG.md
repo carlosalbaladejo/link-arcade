@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Added a GitHub repository link to the web catalog. Saved game links now stay in sync across open tabs in the same browser.
+
 ## [0.1.12]
 
 - Localized the browser catalog, Android app and bundled game interfaces in English. Paseo Costero keeps its original title, place names and radio stations.

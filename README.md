@@ -12,7 +12,7 @@ The browser and Android app keep separate libraries on the device. Game progress
 Open **Add by URL** and paste the address of the playable page, not the address of its repository or JSON file. Any game added this way stays in your library; it is not added to everyone else's catalog.
 
 - **Android:** Preview and save the game. Use HTTPS where possible. HTTP is allowed after an unencrypted-connection warning. A compatible game gets the launcher controls; a normal web game uses its own.
-- **Browser:** Added games open as standalone pages in a new tab and use their own controls. If the host allows the browser to read its metadata (same origin or CORS), Link Arcade shows its title and cover; otherwise it saves the link with the site's hostname.
+- **Browser:** Added games are saved in this browser and stay in the library when you come back. They don't sync across devices or browser profiles, and clearing the site's data removes them. Games open in a new tab and use their own controls. If the host allows the browser to read its metadata (same origin or CORS), Link Arcade shows its title and cover; otherwise it saves the link with the site's hostname.
 
 ## Make a game or extend Link Arcade
 
