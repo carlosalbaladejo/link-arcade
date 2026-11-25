@@ -1,5 +1,5 @@
 import {TILE, BIN_OFFSET, STOP_LINE, binAt, signalPhase, verticalStreet,
-    roadOffset, roadSlope} from './city.js?v=contact-1';
+    roadOffset, roadSlope} from './city.js?v=english-1';
 
 export const vehicleTypes = {
     compact: {w: 1.7, length: 3.4, cruise: 11.5},

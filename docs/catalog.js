@@ -10,7 +10,7 @@ const grid = document.querySelector('#games');
 function webUrl(value, base) {
     const url = new URL(value, base);
     if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) {
-        throw new Error('El enlace debe ser HTTP o HTTPS y no contener credenciales.');
+        throw new Error('Use an HTTP or HTTPS link without credentials.');
     }
     return url;
 }
@@ -97,8 +97,8 @@ function card(game) {
     const play = document.createElement('a');
     play.className = 'play-link';
     play.href = game.id ? './play.html?game=' + game.id : game.url;
-    play.textContent = 'Jugar';
-    play.setAttribute('aria-label', 'Jugar a ' + game.title);
+    play.textContent = 'Play';
+    play.setAttribute('aria-label', 'Play ' + game.title);
     actions.append(play);
     if (!game.id) {
         play.target = '_blank';
@@ -106,11 +106,11 @@ function card(game) {
         const remove = document.createElement('button');
         remove.type = 'button';
         remove.className = 'remove';
-        remove.textContent = 'Quitar';
-        remove.setAttribute('aria-label', 'Quitar ' + game.title);
+        remove.textContent = 'Remove';
+        remove.setAttribute('aria-label', 'Remove ' + game.title);
         remove.addEventListener('click', () => {
             const saved = saveLibrary(imported.filter(entry => entry.url !== game.url));
-            status.textContent = saved ? 'Juego quitado.' : 'Juego quitado durante esta visita.';
+            status.textContent = saved ? 'Game removed.' : 'Game removed for this visit only.';
             input.focus();
         });
         actions.append(remove);
@@ -130,15 +130,15 @@ form.addEventListener('submit', async event => {
     submit.disabled = true;
     try {
         const url = webUrl(input.value.trim());
-        status.textContent = 'Buscando información del juego…';
+        status.textContent = 'Looking up game details…';
         const entry = await inspect(url);
         if (imported.some(game => game.url === entry.url)) {
-            status.textContent = 'Ese juego ya está en el catálogo.';
+            status.textContent = 'This game is already in your library.';
             return;
         }
         const saved = saveLibrary([...imported, entry]);
         form.reset();
-        status.textContent = saved ? 'Juego añadido.' : 'Juego añadido durante esta visita. No se pudo guardar en el navegador.';
+        status.textContent = saved ? 'Game added.' : 'Game added for this visit only. The browser could not save it.';
     } catch (error) {
         status.textContent = error.message;
     } finally {

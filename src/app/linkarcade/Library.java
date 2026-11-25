@@ -25,7 +25,7 @@ final class Library {
 
     void add(Game game) throws Exception {
         for (Game saved : games) {
-            if (saved.url.equals(game.url)) throw new IllegalArgumentException("Este juego ya está en el catálogo.");
+            if (saved.url.equals(game.url)) throw new IllegalArgumentException("This game is already in your library.");
         }
         List<Game> next = new ArrayList<>(games);
         next.add(game);
@@ -61,7 +61,7 @@ final class Library {
     private void save(List<Game> next, SharedPreferences.Editor editor) throws Exception {
         JSONArray result = new JSONArray();
         for (Game game : next) result.put(game.serialize());
-        if (!editor.putString("games", result.toString()).commit()) throw new Exception("No se pudo guardar el catálogo.");
+        if (!editor.putString("games", result.toString()).commit()) throw new Exception("Could not save the library.");
         games.clear();
         games.addAll(next);
     }
@@ -94,12 +94,12 @@ final class Library {
         }
         mapping.put(action, button);
         if (!storage.edit().putString(key(game, profile), new JSONObject(mapping).toString()).commit()) {
-            throw new Exception("No se pudo guardar la asignación.");
+            throw new Exception("Could not save the button mapping.");
         }
     }
 
     void reset(Game game, String profile) throws Exception {
-        if (!storage.edit().remove(key(game, profile)).commit()) throw new Exception("No se pudo restaurar la asignación.");
+        if (!storage.edit().remove(key(game, profile)).commit()) throw new Exception("Could not restore the default mapping.");
     }
 
     Set<String> active(Game game, Map<String, Map<String, Set<String>>> input) {

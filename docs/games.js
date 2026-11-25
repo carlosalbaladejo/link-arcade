@@ -2,14 +2,14 @@ export const bundled = [
     {
         id: 'drive',
         title: 'Paseo Costero',
-        description: 'Conduce y explora una ciudad costera que crece a medida que avanzas.',
+        description: 'Drive through a coastal city that expands as you explore.',
         directory: './driving-game/',
         cover: './driving-game/cover.jpg',
     },
     {
         id: 'controls',
-        title: 'Prueba de mandos',
-        description: 'Comprueba las direcciones, los botones y la pausa de tu mando.',
+        title: 'Controller Test',
+        description: 'Test your gamepad directions, buttons and pause control.',
         directory: './test-game/',
         cover: './test-game/cover.png',
     },

@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="tv-game-manifest" href="./game.json">
-<title>Prueba de mandos</title>
+<title>Controller Test</title>
 <style>
   :root { color-scheme: dark; font: 500 14px system-ui,sans-serif; background: #0b141f; color: #edf5f7; }
   * { box-sizing: border-box; }
@@ -28,13 +28,13 @@
   kbd.active { background: #90f2ce; color: #132226; }
 </style>
 <body>
-<header><h1>Prueba de mandos</h1><output id="status" aria-live="polite">Sin pulsaciones</output></header>
-<main id="field" aria-label="Área de movimiento"><span id="marker"></span><strong id="pause" hidden>En pausa</strong></main>
-<footer id="keys" aria-label="Botones pulsados"></footer>
+<header><h1>Controller Test</h1><output id="status" aria-live="polite">No buttons pressed</output></header>
+<main id="field" aria-label="Movement area"><span id="marker"></span><strong id="pause" hidden>Paused</strong></main>
+<footer id="keys" aria-label="Pressed buttons"></footer>
 <script>
   const labels = {
     move_up: "↑", move_down: "↓", move_left: "←", move_right: "→",
-    jump: "Saltar", mark: "Pulso", home: "Centrar", color: "Cambiar color", pause: "Start", panel: "Select"
+    jump: "Jump", mark: "Pulse", home: "Recenter", color: "Change color", pause: "Start", panel: "Select"
   };
   const keyboard = {
     ArrowUp: "move_up", ArrowDown: "move_down", ArrowLeft: "move_left", ArrowRight: "move_right",
@@ -69,7 +69,7 @@
     active = next;
     for (const [id, badge] of badges) badge.classList.toggle("active", active.has(id));
     const names = [...active].map(id => labels[id]);
-    status.textContent = names.length ? names.join(" + ") : showNames ? "Panel activo · sin pulsaciones" : "Sin pulsaciones";
+    status.textContent = names.length ? names.join(" + ") : showNames ? "Input panel on · no buttons pressed" : "No buttons pressed";
     veil.hidden = !paused;
     field.classList.toggle("pulse", !paused && active.has("mark"));
   }

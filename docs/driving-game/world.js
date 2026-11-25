@@ -2,7 +2,7 @@ import * as THREE from './vendor/three.module.min.js';
 
 import {TILE, ROAD, WEST_TOWN, inWestTown, verticalStreet, countrySegment, roadOffset, roadSlope,
     legacyArea, generatedTown, townName, townTheme, waterColumn,
-    services, serviceAt, binAt, BIN_OFFSET, STOP_LINE, signalPhase} from './city.js?v=contact-1';
+    services, serviceAt, binAt, BIN_OFFSET, STOP_LINE, signalPhase} from './city.js?v=english-1';
 
 export {TILE};
 const STREET_SURFACE = .17;

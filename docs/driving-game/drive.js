@@ -1,9 +1,9 @@
 import * as THREE from './vendor/three.module.min.js';
-import {World, START, elevation, labelAt, onRoad, surface} from './world.js?v=contact-1';
-import {groundPose, DrivingEffects} from './effects.js?v=contact-1';
-import {Traffic, footprint, overlap, vehicleTypes} from './traffic.js?v=contact-1';
-import {DriveAudio, radioNames} from './audio.js?v=contact-1';
-import {drawMinimap, showHeading} from './navigation.js?v=contact-1';
+import {World, START, elevation, labelAt, onRoad, surface} from './world.js?v=english-1';
+import {groundPose, DrivingEffects} from './effects.js?v=english-1';
+import {Traffic, footprint, overlap, vehicleTypes} from './traffic.js?v=english-1';
+import {DriveAudio, radioNames} from './audio.js?v=english-1';
+import {drawMinimap, showHeading} from './navigation.js?v=english-1';
 
 const canvas = document.querySelector('#view');
 const minimap = document.querySelector('#minimap');
@@ -263,13 +263,13 @@ function saveSettings() {
 }
 
 function updateSettings() {
-    menu.querySelector('[data-action="speed"]').textContent = `Velocidad: ${settings.speed} km/h`;
-    menu.querySelector('[data-action="damage"]').textContent = `Vida: ${settings.damage ? 'Sí' : 'No'}`;
-    menu.querySelector('[data-action="sound"]').textContent = `Efectos: ${settings.sound ? 'Sí' : 'No'}`;
-    menu.querySelector('[data-action="minimap"]').textContent = `Minimapa: ${settings.minimap ? 'Sí' : 'No'}`;
+    menu.querySelector('[data-action="speed"]').textContent = `Speed limit: ${settings.speed} km/h`;
+    menu.querySelector('[data-action="damage"]').textContent = `Vehicle damage: ${settings.damage ? 'On' : 'Off'}`;
+    menu.querySelector('[data-action="sound"]').textContent = `Sound effects: ${settings.sound ? 'On' : 'Off'}`;
+    menu.querySelector('[data-action="minimap"]').textContent = `Minimap: ${settings.minimap ? 'On' : 'Off'}`;
     minimap.hidden = !settings.minimap;
     mapFrame = -1;
-    radioButton.textContent = settings.radio ? `△ ${radioNames[settings.radio]}` : '△ Radio apagada';
+    radioButton.textContent = settings.radio ? `△ ${radioNames[settings.radio]}` : '△ Radio off';
     healthHud.hidden = !settings.damage;
     updateHealth();
     audio.enabled = settings.sound;
@@ -436,11 +436,11 @@ window.addEventListener('message', event => {
         bridge = event.ports[0];
         catalog.hidden = false;
         errorExit.hidden = false;
-        hint.textContent = '← → Elegir · × Aceptar · Select Volver';
+        hint.textContent = '← → Choose · × Confirm · Select Back';
         bridge.onmessage = ({data}) => {
             canvas.parentElement.classList.toggle('touch-hud', data === 'touch');
             controller.hidden = data === 'tv';
-            controller.textContent = data === 'touch' ? 'Usar mando físico' : 'Usar mando táctil';
+            controller.textContent = data === 'touch' ? 'Use physical controller' : 'Use touch controls';
             refreshMenu();
         };
         return;
@@ -450,7 +450,7 @@ window.addEventListener('message', event => {
     if (data?.type !== 'tv-game-input' || data.version !== 1 || !Array.isArray(data.pressed)) return;
     if (!nativeControls) {
         nativeControls = true;
-        hint.textContent = '← → Elegir · × Aceptar · Select Volver';
+        hint.textContent = '← → Choose · × Confirm · Select Back';
     }
     const previous = nativeInput;
     nativeInput = new Set(data.pressed);
@@ -458,7 +458,7 @@ window.addEventListener('message', event => {
     syncHorn();
 });
 
-hint.textContent = '← → Elegir · Enter Aceptar · Esc Volver';
+hint.textContent = '← → Choose · Enter Confirm · Esc Back';
 window.addEventListener('keydown', event => {
     const action = keyboard[event.code];
     if (!action) return;
@@ -552,7 +552,7 @@ function startRecovery() {
     velocity = 0;
     syncHorn();
     audio.splash();
-    flash('¡Al agua!');
+    flash('Into the water!');
 }
 
 function stepRecovery(dt) {
@@ -574,7 +574,7 @@ function stepRecovery(dt) {
         waitForAcceleratorRelease = held('accelerate');
         syncHorn();
         audio.land();
-        flash('De vuelta a la carretera');
+        flash('Back on the road');
     }
 }
 
@@ -636,10 +636,10 @@ function simulate(dt) {
         if (repairTime >= 1) {
             health = 100;
             updateHealth();
-            flash('¡Coche reparado!', 'repaired');
+            flash('Car repaired!', 'repaired');
             save();
-        } else if (noticeText.textContent !== 'Para en la entrada para reparar' || notice.hidden) {
-            flash('Para en la entrada para reparar');
+        } else if (noticeText.textContent !== 'Stop in the driveway for repairs' || notice.hidden) {
+            flash('Stop in the driveway for repairs');
         }
     } else repairTime = 0;
     if (parkedBay) {
@@ -655,7 +655,7 @@ function simulate(dt) {
     if (parkingTime >= .6) {
         parkedBay = bay;
         parkingTime = 0;
-        flash('¡Bien aparcado!', 'parked');
+        flash('Nicely parked!', 'parked');
     }
     effects.step(dt, position, velocity);
     wheelAngle += velocity * dt / .40;

@@ -119,7 +119,7 @@ async function launch(game) {
 
 const game = bundled.find(entry => entry.id === new URLSearchParams(location.search).get('game'));
 if (game) {
-    launch(game).catch(() => { status.textContent = 'No se pudo cargar el juego. Vuelve al catálogo e inténtalo de nuevo.'; });
+    launch(game).catch(() => { status.textContent = 'Could not load the game. Return to the catalog and try again.'; });
 } else {
-    status.textContent = 'No se encontró ese juego.';
+    status.textContent = 'Game not found.';
 }

@@ -1,17 +1,17 @@
 {
   "version": 1,
-  "title": "Prueba de mandos",
+  "title": "Controller Test",
   "cover": "./cover.png",
   "actions": [
-    { "id": "move_up", "label": "Arriba", "default": "dpad_up" },
-    { "id": "move_down", "label": "Abajo", "default": "dpad_down" },
-    { "id": "move_left", "label": "Izquierda", "default": "dpad_left" },
-    { "id": "move_right", "label": "Derecha", "default": "dpad_right" },
-    { "id": "jump", "label": "Saltar", "default": "south" },
-    { "id": "mark", "label": "Pulso", "default": "east" },
-    { "id": "home", "label": "Centrar", "default": "west" },
-    { "id": "color", "label": "Cambiar color", "default": "north" },
-    { "id": "panel", "label": "Panel de entrada", "default": "select" },
-    { "id": "pause", "label": "Pausar / reanudar", "default": "start" }
+    { "id": "move_up", "label": "Up", "default": "dpad_up" },
+    { "id": "move_down", "label": "Down", "default": "dpad_down" },
+    { "id": "move_left", "label": "Left", "default": "dpad_left" },
+    { "id": "move_right", "label": "Right", "default": "dpad_right" },
+    { "id": "jump", "label": "Jump", "default": "south" },
+    { "id": "mark", "label": "Pulse", "default": "east" },
+    { "id": "home", "label": "Recenter", "default": "west" },
+    { "id": "color", "label": "Change color", "default": "north" },
+    { "id": "panel", "label": "Input panel", "default": "select" },
+    { "id": "pause", "label": "Pause / resume", "default": "start" }
   ]
 }

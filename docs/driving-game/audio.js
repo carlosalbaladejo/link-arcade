@@ -50,7 +50,7 @@ const stations = [
         motifs: [[0, -1, 2, 1, -1, 4, -1, 2], [2, 1, -1, 3, 2, -1, 4, -1], [-1, 4, 3, -1, 5, 4, -1, 2]],
     },
 ];
-export const radioNames = ['Apagada', ...stations.map(station => station.name)];
+export const radioNames = ['Off', ...stations.map(station => station.name)];
 const frequency = note => 440 * 2 ** ((note - 69) / 12);
 const sections = [
     {theme: 0, melody: false, drums: false, chords: true},

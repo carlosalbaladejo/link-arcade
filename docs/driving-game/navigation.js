@@ -1,12 +1,12 @@
-import {TILE, verticalStreet, roadOffset} from './city.js?v=contact-1';
-import {district, riverCenter, shore, oppositeShore} from './world.js?v=contact-1';
+import {TILE, verticalStreet, roadOffset} from './city.js?v=english-1';
+import {district, riverCenter, shore, oppositeShore} from './world.js?v=english-1';
 
 const shades = {
     villas: '#bccf9a', city: '#d2c1a4', offices: '#b9c6b7', river: '#bbd4a6',
     beach: '#dfd09d', park: '#8eb790', hills: '#6b9f78', meadow: '#bec78b', westTown: '#e1bf92',
     desert: '#d7b280', town: '#e1bf92',
 };
-const directions = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
+const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 
 export function showHeading(needle, label, heading) {
     needle.style.transform = `rotate(${-heading}rad)`;

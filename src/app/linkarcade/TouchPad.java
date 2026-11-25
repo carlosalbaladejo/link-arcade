@@ -105,10 +105,10 @@ final class TouchPad extends LinearLayout {
     static String label(String id) {
         if (id == null) return MainActivity.buttonLabel(null);
         switch (id) {
-            case "north": return "Triángulo · arriba";
-            case "south": return "Equis · abajo";
-            case "west": return "Cuadrado · izquierda";
-            case "east": return "Círculo · derecha";
+            case "north": return "Triangle · top";
+            case "south": return "Cross · bottom";
+            case "west": return "Square · left";
+            case "east": return "Circle · right";
             default: return MainActivity.buttonLabel(id);
         }
     }

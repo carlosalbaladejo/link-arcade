@@ -77,7 +77,7 @@ public final class MainActivity extends Activity implements InputManager.InputDe
             catalog(null);
         } catch (Exception error) {
             page();
-            style.append(screen, style.text("No se pudo abrir el catálogo.", 22, Style.TEXT), 0);
+            style.append(screen, style.text("Could not open the catalog.", 22, Style.TEXT), 0);
         }
     }
 
@@ -140,8 +140,8 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         mappingGame = null;
         mappingProfile = null;
         page();
-        heading("Link Arcade", "Catálogo de juegos web");
-        Button add = appendButton(screen, "+  Añadir por URL", 18, this::addDialog);
+        heading("Link Arcade", "Web game catalog");
+        Button add = appendButton(screen, "+  Add by URL", 18, this::addDialog);
         Game focus = returnTo;
         LinearLayout row = null;
         List<Game> entries = new ArrayList<>();
@@ -176,7 +176,7 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         tile.setPadding(style.dp(9), style.dp(9), style.dp(9), style.dp(9));
         tile.setBackground(style.panel(Style.CARD, Style.EDGE, 15));
         tile.setFocusable(true);
-        tile.setContentDescription(game.title + (game.compatible() ? ", con mando" : ", página web"));
+        tile.setContentDescription(game.title + (game.compatible() ? ", gamepad compatible" : ", web page"));
         tile.setOnFocusChangeListener((view, focused) -> tile.setBackground(style.panel(
                 focused ? 0xff244a50 : Style.CARD, focused ? Style.MINT : Style.EDGE, 15)));
         Frame image = new Frame(game);
@@ -188,8 +188,8 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         title.setMaxLines(1);
         title.setEllipsize(TextUtils.TruncateAt.END);
         style.append(tile, title, 7);
-        style.append(tile, style.text(game.driving() ? "Conducción libre · sin internet" : game.builtin() ? "Prueba incluida · sin internet"
-                : game.compatible() ? "Compatible con mando" : "Página web", 13, Style.MUTED), 3);
+        style.append(tile, style.text(game.driving() ? "Free driving · offline" : game.builtin() ? "Built-in test · offline"
+                : game.compatible() ? "Gamepad compatible" : "Web page", 13, Style.MUTED), 3);
         tile.setOnClickListener(view -> details(game.builtin() ? game : library.find(game.url)));
         return tile;
     }
@@ -284,23 +284,23 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         panel.addView(image.view, new LinearLayout.LayoutParams(-1, style.dp(100)));
         new AlertDialog.Builder(this).setTitle(game.title)
                 .setView(panel)
-                .setMessage(game.driving() ? "← → Girar · × Acelerar · □ Frenar / marcha atrás · ○ Claxon · △ Radio" :
-                        game.builtin() ? "Comprueba los diez botones, la pausa y dos pulsaciones a la vez."
-                        : game.compatible() ? "Compatible con el mando de Link Arcade." : "Usa los controles de la página.")
-                .setPositiveButton("Jugar", (dialog, button) -> open(game))
-                .setNeutralButton(game.compatible() ? "Controles" : "Cerrar", (dialog, button) -> {
+                .setMessage(game.driving() ? "← → Steer · × Accelerate · □ Brake / reverse · ○ Horn · △ Radio" :
+                        game.builtin() ? "Test all ten buttons, pausing and simultaneous presses."
+                        : game.compatible() ? "Works with Link Arcade gamepad controls." : "Uses the web page’s own controls.")
+                .setPositiveButton("Play", (dialog, button) -> open(game))
+                .setNeutralButton(game.compatible() ? "Controls" : "Close", (dialog, button) -> {
                     if (game.compatible()) profiles(game);
                 })
-                .setNegativeButton(game.builtin() ? "Cancelar" : "Quitar", (dialog, button) -> {
+                .setNegativeButton(game.builtin() ? "Cancel" : "Remove", (dialog, button) -> {
                     if (!game.builtin()) confirmRemove(game);
                 }).show();
         if (!game.builtin()) refreshCover(game, image);
     }
 
     private void confirmRemove(Game game) {
-        new AlertDialog.Builder(this).setTitle("¿Quitar del catálogo?")
-                .setMessage(game.title).setNegativeButton("Cancelar", null)
-                .setPositiveButton("Quitar", (dialog, button) -> {
+        new AlertDialog.Builder(this).setTitle("Remove from your library?")
+                .setMessage(game.title).setNegativeButton("Cancel", null)
+                .setPositiveButton("Remove", (dialog, button) -> {
                     try {
                         library.remove(game);
                         covers.remove(game.url);
@@ -315,11 +315,11 @@ public final class MainActivity extends Activity implements InputManager.InputDe
     private void addDialog() {
         EditText url = new EditText(this);
         url.setSingleLine(true);
-        url.setHint("https://… o http://…");
+        url.setHint("https://… or http://…");
         url.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
         url.setPadding(style.dp(24), style.dp(12), style.dp(24), style.dp(12));
-        AlertDialog input = new AlertDialog.Builder(this).setTitle("Añadir juego")
-                .setView(url).setNegativeButton("Cancelar", null).setPositiveButton("Buscar", null).create();
+        AlertDialog input = new AlertDialog.Builder(this).setTitle("Add game")
+                .setView(url).setNegativeButton("Cancel", null).setPositiveButton("Look up", null).create();
         input.setOnShowListener(dialog -> {
             url.requestFocus();
             Button search = input.getButton(AlertDialog.BUTTON_POSITIVE);
@@ -332,12 +332,12 @@ public final class MainActivity extends Activity implements InputManager.InputDe
                     return;
                 }
                 if ("http".equals(address.getScheme())) {
-                    AlertDialog warning = new AlertDialog.Builder(this).setTitle("Conexión HTTP sin cifrar")
+                    AlertDialog warning = new AlertDialog.Builder(this).setTitle("Unencrypted HTTP connection")
                             .setMessage(Imports.origin(address) + "\n\n"
-                                    + "Otras personas en la red podrían ver o modificar los datos del juego. "
-                                    + "Continúa solo si confías en el sitio y en la red. No introduzcas contraseñas.")
-                            .setNegativeButton("Cancelar", null)
-                            .setPositiveButton("Continuar", (prompt, button) -> lookupGame(input, url, search, address))
+                                    + "Other people on the network could see or change game data. "
+                                    + "Continue only if you trust the site and network. Do not enter passwords.")
+                            .setNegativeButton("Cancel", null)
+                            .setPositiveButton("Continue", (prompt, button) -> lookupGame(input, url, search, address))
                             .show();
                     warning.getButton(AlertDialog.BUTTON_NEGATIVE).requestFocus();
                 } else {
@@ -358,7 +358,7 @@ public final class MainActivity extends Activity implements InputManager.InputDe
 
     private void lookupGame(AlertDialog input, EditText url, Button search, URI address) {
         search.setEnabled(false);
-        search.setText("Buscando…");
+        search.setText("Looking up…");
         network.execute(() -> {
             try {
                 Game game = Imports.inspect(address);
@@ -371,8 +371,8 @@ public final class MainActivity extends Activity implements InputManager.InputDe
                 runOnUiThread(() -> {
                     if (!input.isShowing() || isFinishing()) return;
                     search.setEnabled(true);
-                    search.setText("Buscar");
-                    url.setError("No se pudo importar: " + error.getMessage());
+                    search.setText("Look up");
+                    url.setError("Could not import: " + error.getMessage());
                 });
             }
         });
@@ -381,7 +381,7 @@ public final class MainActivity extends Activity implements InputManager.InputDe
     private void preview(Game game) {
         for (Game saved : library.games) {
             if (saved.url.equals(game.url)) {
-                toast("Este juego ya está en el catálogo.");
+                toast("This game is already in your library.");
                 return;
             }
         }
@@ -390,9 +390,9 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         Frame image = new Frame(game);
         panel.addView(image.view, new LinearLayout.LayoutParams(-1, style.dp(100)));
         loadSavedCover(game, image);
-        style.append(panel, style.text(game.compatible() ? "Compatible con mando" : "Página web sin integración", 15, Style.MUTED), 8);
+        style.append(panel, style.text(game.compatible() ? "Gamepad compatible" : "Web page with its own controls", 15, Style.MUTED), 8);
         new AlertDialog.Builder(this).setTitle(game.title).setView(panel)
-                .setNegativeButton("Cancelar", null).setPositiveButton("Guardar", (dialog, button) -> {
+                .setNegativeButton("Cancel", null).setPositiveButton("Save", (dialog, button) -> {
                     try {
                         library.add(game);
                         catalog(game);
@@ -407,15 +407,15 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         mappingGame = game;
         mappingProfile = null;
         page();
-        heading("Controles", game.title);
-        appendButton(screen, "‹ Catálogo", 16, () -> catalog(game));
-        if (!tv) appendButton(screen, "Mando en pantalla", 12, () -> bindings(game, "touch", null));
+        heading("Controls", game.title);
+        appendButton(screen, "‹ Catalog", 16, () -> catalog(game));
+        if (!tv) appendButton(screen, "On-screen controls", 12, () -> bindings(game, "touch", null));
         Set<String> seen = new java.util.HashSet<>();
         for (InputDevice device : Controls.devices()) {
             String profile = Controls.profile(device);
             if (seen.add(profile)) appendButton(screen, device.getName(), 12, () -> bindings(game, profile, null));
         }
-        if (seen.isEmpty()) style.append(screen, style.text("Empareja un mando Bluetooth desde los ajustes del dispositivo.", 15, Style.MUTED), 12);
+        if (seen.isEmpty()) style.append(screen, style.text("Pair a Bluetooth gamepad in your device settings.", 15, Style.MUTED), 12);
     }
 
     private void bindings(Game game, String profile, String focusId) {
@@ -423,8 +423,8 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         mappingProfile = profile;
         capture = null;
         page();
-        heading("Asignar botones", game.title);
-        appendButton(screen, "‹ Mandos", 16, () -> profiles(game));
+        heading("Map buttons", game.title);
+        appendButton(screen, "‹ Controllers", 16, () -> profiles(game));
         Map<String, String> mapping = library.bindings(game, profile);
         for (Game.Action action : game.actions) {
             String id = mapping.get(action.id);
@@ -433,7 +433,7 @@ public final class MainActivity extends Activity implements InputManager.InputDe
                     () -> chooseBinding(game, profile, action));
             if (action.id.equals(focusId)) row.requestFocus();
         }
-        appendButton(screen, "Restaurar valores del juego", 14, () -> {
+        appendButton(screen, "Restore game defaults", 14, () -> {
             try {
                 library.reset(game, profile);
                 bindings(game, profile, null);
@@ -450,14 +450,14 @@ public final class MainActivity extends Activity implements InputManager.InputDe
             String[] labels = new String[options.size()];
             for (int i = 0; i < options.size(); i++) labels[i] = TouchPad.label(options.get(i));
             new AlertDialog.Builder(this).setTitle(action.name).setItems(labels,
-                    (dialog, position) -> saveBinding(action, options.get(position))).setNegativeButton("Cancelar", null).show();
+                    (dialog, position) -> saveBinding(action, options.get(position))).setNegativeButton("Cancel", null).show();
             return;
         }
         capture = action;
         page();
-        heading(action.name, "Pulsa el botón o la dirección que quieres asignar.");
-        appendButton(screen, "Cancelar", 16, () -> bindings(game, profile, action.id));
-        appendButton(screen, "Dejar sin asignar", 8, () -> saveBinding(action, ""));
+        heading(action.name, "Press the button or direction you want to assign.");
+        appendButton(screen, "Cancel", 16, () -> bindings(game, profile, action.id));
+        appendButton(screen, "Leave unassigned", 8, () -> saveBinding(action, ""));
     }
 
     private void saveBinding(Game.Action action, String button) {
@@ -471,14 +471,14 @@ public final class MainActivity extends Activity implements InputManager.InputDe
 
     static String buttonLabel(String id) {
         switch (id == null ? "" : id) {
-            case "dpad_up": return "Cruceta arriba";
-            case "dpad_down": return "Cruceta abajo";
-            case "dpad_left": return "Cruceta izquierda";
-            case "dpad_right": return "Cruceta derecha";
-            case "south": return "A · abajo";
-            case "east": return "B · derecha";
-            case "west": return "X · izquierda";
-            case "north": return "Y · arriba";
+            case "dpad_up": return "D-pad up";
+            case "dpad_down": return "D-pad down";
+            case "dpad_left": return "D-pad left";
+            case "dpad_right": return "D-pad right";
+            case "south": return "A · bottom";
+            case "east": return "B · right";
+            case "west": return "X · left";
+            case "north": return "Y · top";
             case "left_shoulder": return "L1";
             case "right_shoulder": return "R1";
             case "left_trigger": return "L2";
@@ -487,7 +487,7 @@ public final class MainActivity extends Activity implements InputManager.InputDe
             case "right_stick": return "R3";
             case "start": return "Start";
             case "select": return "Select";
-            default: return "Sin asignar";
+            default: return "Unassigned";
         }
     }
 
@@ -503,7 +503,7 @@ public final class MainActivity extends Activity implements InputManager.InputDe
             play.start();
         } catch (Exception error) {
             play = null;
-            toast("No se pudo abrir el navegador del dispositivo.");
+            toast("Could not open the device browser.");
         }
     }
 

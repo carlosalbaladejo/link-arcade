@@ -64,7 +64,7 @@ final class PlaySession {
         viewport.addView(web, new FrameLayout.LayoutParams(-1, -1));
         content = viewport;
 
-        toggle = TouchPad.overlayButton(style, "Mostrar mando");
+        toggle = TouchPad.overlayButton(style, "Show touch controls");
         touch = new TouchPad(style, activity::touchButton, game.driving());
         if (!tv) {
             FrameLayout controls = new FrameLayout(activity);
@@ -83,7 +83,7 @@ final class PlaySession {
                 return insets;
             });
             LinearLayout header = style.row();
-            Button back = TouchPad.overlayButton(style, "‹ Catálogo");
+            Button back = TouchPad.overlayButton(style, "‹ Catalog");
             back.setOnClickListener(view -> activity.closeGame());
             header.addView(back, new LinearLayout.LayoutParams(-2, style.dp(48)));
             if (game.compatible()) {
@@ -115,7 +115,7 @@ final class PlaySession {
             resetTouchPressed(touch);
         }
         touch.setVisibility(visible ? View.VISIBLE : View.GONE);
-        toggle.setText(visible ? "Ocultar mando" : "Mostrar mando");
+        toggle.setText(visible ? "Hide touch controls" : "Show touch controls");
         updateDrivingControls();
     }
 
@@ -181,7 +181,7 @@ final class PlaySession {
             web.postWebMessage(new WebMessage(data), target);
             last = held;
         } catch (JSONException | IllegalStateException exception) {
-            showError("No se pudo enviar la entrada al juego.");
+            showError("Could not send input to the game.");
         }
     }
 
@@ -216,7 +216,7 @@ final class PlaySession {
         Button retry = style.button("Reintentar");
         retry.setOnClickListener(view -> load());
         style.append(panel, retry, 12);
-        Button back = style.button("Volver al catálogo");
+        Button back = style.button("Return to catalog");
         back.setOnClickListener(view -> activity.closeGame());
         style.append(panel, back, 8);
         error = panel;
@@ -228,7 +228,7 @@ final class PlaySession {
         @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
             if (!request.isForMainFrame()) return false;
             if (allowed(request.getUrl().toString())) return false;
-            showError("El juego intentó abrir una página de otro sitio.");
+            showError("The game tried to open a page on another site.");
             return true;
         }
 
@@ -238,7 +238,7 @@ final class PlaySession {
             disconnectDrivingControls();
             last = Collections.emptySet();
             activity.clearInputs();
-            if (!allowed(url)) showError("La página no pertenece al sitio guardado.");
+            if (!allowed(url)) showError("The page is outside the saved site.");
         }
 
         @Override public void onPageFinished(WebView view, String url) {
@@ -249,16 +249,16 @@ final class PlaySession {
         }
 
         @Override public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError problem) {
-            if (request.isForMainFrame()) showError("No se pudo cargar el juego.");
+            if (request.isForMainFrame()) showError("Could not load the game.");
         }
 
         @Override public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse response) {
-            if (request.isForMainFrame()) showError("El juego devolvió HTTP " + response.getStatusCode() + ".");
+            if (request.isForMainFrame()) showError("The game returned HTTP " + response.getStatusCode() + ".");
         }
 
         @Override public boolean onRenderProcessGone(WebView view, android.webkit.RenderProcessGoneDetail detail) {
             activity.closeGame();
-            activity.toast("El navegador se cerró. Puedes abrir el juego de nuevo.");
+            activity.toast("The browser closed. You can open the game again.");
             return true;
         }
 

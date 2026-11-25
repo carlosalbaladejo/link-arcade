@@ -47,7 +47,7 @@ final class Imports {
         for (Element element : html.select("link[rel]")) {
             for (String token : element.attr("rel").split("\\s+")) {
                 if (!token.equalsIgnoreCase("tv-game-manifest")) continue;
-                if (link != null) throw new IOException("La página declara más de un manifiesto.");
+                if (link != null) throw new IOException("The page declares more than one manifest.");
                 link = element;
             }
         }
@@ -63,9 +63,9 @@ final class Imports {
         String cover = "";
         if (manifest.has("cover")) {
             Object field = manifest.opt("cover");
-            if (!(field instanceof String)) throw new IOException("La portada debe ser una URL.");
+            if (!(field instanceof String)) throw new IOException("The cover must be a URL.");
             URI coverUri = resolve(response.url, (String) field);
-            if (!origin(coverUri).equals(origin(page.url))) throw new IOException("La portada debe estar en el mismo sitio.");
+            if (!origin(coverUri).equals(origin(page.url))) throw new IOException("The cover must be hosted on the same site.");
             cover = coverUri.toString();
         }
         return Game.fromManifest(page.url.toString(), cover, manifest);
@@ -87,21 +87,21 @@ final class Imports {
         try (JsonReader reader = new JsonReader(new InputStreamReader(new ByteArrayInputStream(body), StandardCharsets.UTF_8))) {
             Object data = value(reader, 0);
             if (!(data instanceof JSONObject) || reader.peek() != JsonToken.END_DOCUMENT) {
-                throw new IOException("El manifiesto debe ser un objeto JSON.");
+                throw new IOException("The manifest must be a JSON object.");
             }
             return (JSONObject) data;
         }
     }
 
     private static Object value(JsonReader reader, int depth) throws Exception {
-        if (depth > 12) throw new IOException("Manifiesto demasiado profundo.");
+        if (depth > 12) throw new IOException("The manifest is nested too deeply.");
         switch (reader.peek()) {
             case BEGIN_OBJECT:
                 JSONObject object = new JSONObject();
                 reader.beginObject();
                 while (reader.hasNext()) {
                     String field = reader.nextName();
-                    if (object.has(field)) throw new IOException("Campo duplicado: " + field);
+                    if (object.has(field)) throw new IOException("Duplicate field: " + field);
                     object.put(field, value(reader, depth + 1));
                 }
                 reader.endObject();
@@ -118,7 +118,7 @@ final class Imports {
             case NULL:
                 reader.nextNull();
                 return JSONObject.NULL;
-            default: throw new IOException("JSON inválido.");
+            default: throw new IOException("Invalid JSON.");
         }
     }
 
@@ -134,7 +134,7 @@ final class Imports {
                     + (uri.getRawQuery() == null ? "" : "?" + uri.getRawQuery())
                     + (uri.getRawFragment() == null ? "" : "#" + uri.getRawFragment()));
         } catch (Exception error) {
-            throw new IOException("Introduce una URL HTTP o HTTPS válida.");
+            throw new IOException("Enter a valid HTTP or HTTPS URL.");
         }
     }
 
@@ -147,18 +147,18 @@ final class Imports {
     }
 
     private static URI resolve(URI base, String href) throws IOException {
-        if (href.isEmpty()) throw new IOException("Falta la URL del archivo.");
+        if (href.isEmpty()) throw new IOException("File URL is missing.");
         try {
             return webUri(base.resolve(new URI(href)).toString());
         } catch (Exception error) {
-            throw new IOException("Un enlace no contiene una URL HTTP o HTTPS válida.");
+            throw new IOException("A link does not contain a valid HTTP or HTTPS URL.");
         }
     }
 
     private static Response fetch(URI url, String requiredOrigin, int limit) throws IOException {
         for (int redirect = 0; redirect <= 5; redirect++) {
             if (Game.ASSET_HOST.equals(url.getHost()) || (requiredOrigin != null && !requiredOrigin.equals(origin(url)))) {
-                throw new IOException("El archivo debe estar en el mismo sitio que el juego.");
+                throw new IOException("The file must be hosted on the same site as the game.");
             }
             HttpURLConnection connection = (HttpURLConnection) url.toURL().openConnection();
             try {
@@ -171,25 +171,25 @@ final class Imports {
                 int status = connection.getResponseCode();
                 if (status == 301 || status == 302 || status == 303 || status == 307 || status == 308) {
                     String target = connection.getHeaderField("Location");
-                    if (target == null) throw new IOException("Redirección sin destino.");
+                    if (target == null) throw new IOException("Redirect has no destination.");
                     URI previous = url;
                     url = resolve(url, target);
                     if ("https".equals(previous.getScheme()) && "http".equals(url.getScheme())) {
-                        throw new IOException("El sitio intentó redirigir de HTTPS a HTTP.");
+                        throw new IOException("The site tried to redirect from HTTPS to HTTP.");
                     }
                     if (url.getRawFragment() == null && previous.getRawFragment() != null) {
                         url = webUri(url + "#" + previous.getRawFragment());
                     }
                     continue;
                 }
-                if (status < 200 || status >= 300) throw new IOException("El sitio devolvió HTTP " + status + ".");
-                if (connection.getContentLengthLong() > limit) throw new IOException("El archivo es demasiado grande.");
+                if (status < 200 || status >= 300) throw new IOException("The site returned HTTP " + status + ".");
+                if (connection.getContentLengthLong() > limit) throw new IOException("The file is too large.");
                 return new Response(url, read(connection.getInputStream(), limit));
             } finally {
                 connection.disconnect();
             }
         }
-        throw new IOException("Demasiadas redirecciones.");
+        throw new IOException("Too many redirects.");
     }
 
     static byte[] read(InputStream source, int limit) throws IOException {
@@ -197,7 +197,7 @@ final class Imports {
             byte[] buffer = new byte[8192];
             int count;
             while ((count = stream.read(buffer)) != -1) {
-                if (result.size() + count > limit) throw new IOException("El archivo es demasiado grande.");
+                if (result.size() + count > limit) throw new IOException("The file is too large.");
                 result.write(buffer, 0, count);
             }
             return result.toByteArray();

@@ -87,7 +87,7 @@ Build for a responsive landscape viewport, with readable text on TV and on phone
 
 1. Check that the game URL, JSON manifest and cover load without signing in, and that the manifest and cover resolve to the game page's origin after any redirects.
 2. Try keyboard and touch in a normal mobile or desktop browser. For browser gamepad support, test with a standard-mapped controller after a button press exposes it to the browser.
-3. In Android Link Arcade, add the playable page with **Añadir por URL**, check the title and cover, and try pressing two actions together, releasing them independently, pausing and resuming, and remapping a button.
+3. In Android Link Arcade, add the playable page with **Add by URL**, check the title and cover, and try pressing two actions together, releasing them independently, pausing and resuming, and remapping a button.
 4. Share the playable page URL. The [controller test manifest](../docs/test-game/game.json) and [receiver code](../docs/test-game/index.html) are working examples.
 
 For browser catalog metadata on another origin, allow cross-origin reads of both the HTML and JSON with `Access-Control-Allow-Origin` for the catalog's origin (or `*` for public assets). This is not required by the Android importer. The browser still saves a playable link when it cannot read the metadata.

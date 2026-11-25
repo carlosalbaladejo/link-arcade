@@ -55,27 +55,27 @@ final class Game {
         for (java.util.Iterator<String> fields = manifest.keys(); fields.hasNext();) {
             String field = fields.next();
             if (!Arrays.asList("version", "title", "cover", "actions").contains(field)) {
-                throw new JSONException("Campo desconocido: " + field);
+                throw new JSONException("Unknown field: " + field);
             }
         }
         Object version = manifest.opt("version");
         if (!(version instanceof Number) || ((Number) version).doubleValue() != 1) {
-            throw new JSONException("Versión de juego no compatible.");
+            throw new JSONException("Unsupported game manifest version.");
         }
         return new Game(url, label(manifest, "title", 80), cover, readActions(manifest.getJSONArray("actions")));
     }
 
     private static String label(JSONObject data, String field, int max) throws JSONException {
         Object value = data.get(field);
-        if (!(value instanceof String)) throw new JSONException("Campo inválido: " + field);
+        if (!(value instanceof String)) throw new JSONException("Invalid field: " + field);
         String string = (String) value;
         if (string.codePoints().allMatch(cp -> Character.isWhitespace(cp) || Character.isSpaceChar(cp))
-                || string.codePointCount(0, string.length()) > max) throw new JSONException("Campo inválido: " + field);
+                || string.codePointCount(0, string.length()) > max) throw new JSONException("Invalid field: " + field);
         return string;
     }
 
     private static List<Action> readActions(JSONArray array) throws JSONException {
-        if (array.length() < 1 || array.length() > 32) throw new JSONException("Número de acciones inválido.");
+        if (array.length() < 1 || array.length() > 32) throw new JSONException("Invalid action count.");
         List<Action> actions = new ArrayList<>();
         Set<String> ids = new HashSet<>();
         Set<String> defaults = new HashSet<>();
@@ -83,19 +83,19 @@ final class Game {
         for (int i = 0; i < array.length(); i++) {
             JSONObject row = array.getJSONObject(i);
             if (row.length() != (row.has("default") ? 3 : 2) || !(row.opt("id") instanceof String)) {
-                throw new JSONException("Acción inválida.");
+                throw new JSONException("Invalid action.");
             }
             String id = row.getString("id");
             String name = label(row, "label", 48);
             String button = row.has("default") ? label(row, "default", 32) : "";
             if (!id.matches("[a-z][a-z0-9_]{0,31}") || !ids.add(id)
                     || (!button.isEmpty() && (!BUTTONS.contains(button) || !defaults.add(button)))) {
-                throw new JSONException("Acción o asignación duplicada o inválida: " + id);
+                throw new JSONException("Duplicate or invalid action or mapping: " + id);
             }
             pause |= id.equals("pause") && button.equals("start");
             actions.add(new Action(id, name, button));
         }
-        if (!pause) throw new JSONException("Falta la acción pause con Start.");
+        if (!pause) throw new JSONException("The pause action must be mapped to Start.");
         return Collections.unmodifiableList(actions);
     }
 

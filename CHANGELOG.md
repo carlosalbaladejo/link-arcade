@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.12]
+
+- Localized the browser catalog, Android app and bundled game interfaces in English. Paseo Costero keeps its original title, place names and radio stations.
+
 ## [0.1.11]
 
 - Published Link Arcade's source, playable browser catalog, example games and game compatibility specification. The browser catalog supports local URL bookmarks and keyboard, touch and standard controller input in the included games.
@@ -50,4 +54,5 @@
 
 - Introduced the Android launcher, URL imports, a persistent local library, controller remapping and an offline controller test.
 
+[0.1.12]: https://github.com/carlosalbaladejo/link-arcade/releases/tag/v0.1.12
 [0.1.11]: https://github.com/carlosalbaladejo/link-arcade/releases/tag/v0.1.11
