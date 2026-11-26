@@ -15,7 +15,7 @@ final class Game {
     static final String ASSET_HOST = "appassets.androidplatform.net";
     static final String TEST_ORIGIN = "https://" + ASSET_HOST;
     static final String TEST_URL = TEST_ORIGIN + "/controller-test/index.html";
-    static final String DRIVE_URL = TEST_ORIGIN + "/driving/index.html";
+    static final String DRIVE_URL = "https://carlosalbaladejo.github.io/little-drive/";
     static final Set<String> BUTTONS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             "dpad_up", "dpad_down", "dpad_left", "dpad_right", "south", "east", "west", "north",
             "left_shoulder", "right_shoulder", "left_trigger", "right_trigger",
@@ -47,7 +47,7 @@ final class Game {
     }
 
     boolean compatible() { return !actions.isEmpty(); }
-    boolean builtin() { return TEST_URL.equals(url) || driving(); }
+    boolean builtin() { return TEST_URL.equals(url); }
     boolean driving() { return DRIVE_URL.equals(url); }
     List<String> touchButtons() { return driving() ? DRIVING_TOUCH : TOUCH; }
 

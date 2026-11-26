@@ -6,7 +6,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,10 +20,30 @@ final class Library {
     private final SharedPreferences storage;
     final List<Game> games = new ArrayList<>();
 
-    Library(Context context) throws JSONException {
+    Library(Context context) throws Exception {
         storage = context.getSharedPreferences("library", Context.MODE_PRIVATE);
         JSONArray saved = new JSONArray(storage.getString("games", "[]"));
         for (int i = 0; i < saved.length(); i++) games.add(Game.restore(saved.getJSONObject(i)));
+        try (InputStream asset = context.getAssets().open("default-games.json")) {
+            seedDefaults(new JSONArray(new String(Imports.read(asset, 65536), StandardCharsets.UTF_8)));
+        }
+    }
+
+    private void seedDefaults(JSONArray defaults) throws Exception {
+        Set<String> seeded = new LinkedHashSet<>(storage.getStringSet("seeded_default_urls", Collections.emptySet()));
+        List<Game> additions = new ArrayList<>();
+        boolean changed = false;
+        for (int i = 0; i < defaults.length(); i++) {
+            Game game = Game.restore(defaults.getJSONObject(i));
+            if (seeded.add(game.url)) {
+                changed = true;
+                if (find(game.url) == null) additions.add(game);
+            }
+        }
+        if (changed) {
+            additions.addAll(games);
+            save(additions, storage.edit().putStringSet("seeded_default_urls", seeded));
+        }
     }
 
     void add(Game game) throws Exception {

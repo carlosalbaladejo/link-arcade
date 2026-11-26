@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.14]
+
+- Pre-added A Little Drive by URL in both the Android and browser libraries. The link can be removed and re-added like any other game.
+- Removed the offline copy of A Little Drive from the APK. The standalone game keeps the lightweight Fire TV rendering profile; the Controller Test still works offline.
+
 ## [0.1.13]
 
 - Added a lighter rendering profile for A Little Drive on Fire TV, with less graphics work per frame and no change to driving controls or saves.

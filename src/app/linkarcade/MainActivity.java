@@ -50,7 +50,6 @@ public final class MainActivity extends Activity implements InputManager.InputDe
     Style style;
     private Library library;
     private Game diagnostic;
-    private Game driving;
     private PlaySession play;
     private LinearLayout screen;
     private InputManager devices;
@@ -73,7 +72,6 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         try {
             library = new Library(this);
             diagnostic = bundled(Game.TEST_URL, "controller-test/game.json");
-            driving = bundled(Game.DRIVE_URL, "driving/game.json");
             catalog(null);
         } catch (Exception error) {
             page();
@@ -145,7 +143,6 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         Game focus = returnTo;
         LinearLayout row = null;
         List<Game> entries = new ArrayList<>();
-        entries.add(driving);
         entries.addAll(library.games);
         entries.add(diagnostic);
         for (int i = 0; i < entries.size(); i++) {
@@ -188,7 +185,7 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         title.setMaxLines(1);
         title.setEllipsize(TextUtils.TruncateAt.END);
         style.append(tile, title, 7);
-        style.append(tile, style.text(game.driving() ? "Free driving · offline" : game.builtin() ? "Built-in test · offline"
+        style.append(tile, style.text(game.builtin() ? "Built-in test · offline"
                 : game.compatible() ? "Gamepad compatible" : "Web page", 13, Style.MUTED), 3);
         tile.setOnClickListener(view -> details(game.builtin() ? game : library.find(game.url)));
         return tile;
@@ -200,8 +197,8 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         Frame(Game game) {
             view.setBackground(style.panel(Style.BG, 0, 8));
             view.setClipToOutline(true);
-            view.setImageResource(game.driving() ? R.drawable.driving_cover : R.drawable.arcade);
-            view.setScaleType(game.driving() ? ImageView.ScaleType.CENTER_CROP : ImageView.ScaleType.FIT_CENTER);
+            view.setImageResource(R.drawable.arcade);
+            view.setScaleType(ImageView.ScaleType.FIT_CENTER);
             if (game == diagnostic) {
                 try (InputStream stream = getAssets().open("controller-test/cover.png")) {
                     Bitmap cover = BitmapFactory.decodeStream(stream);
@@ -284,8 +281,7 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         panel.addView(image.view, new LinearLayout.LayoutParams(-1, style.dp(100)));
         new AlertDialog.Builder(this).setTitle(game.title)
                 .setView(panel)
-                .setMessage(game.driving() ? "← → Steer · × Accelerate · □ Brake / reverse · ○ Horn · △ Radio" :
-                        game.builtin() ? "Test all ten buttons, pausing and simultaneous presses."
+                .setMessage(game.builtin() ? "Test all ten buttons, pausing and simultaneous presses."
                         : game.compatible() ? "Works with Link Arcade gamepad controls." : "Uses the web page’s own controls.")
                 .setPositiveButton("Play", (dialog, button) -> open(game))
                 .setNeutralButton(game.compatible() ? "Controls" : "Close", (dialog, button) -> {

@@ -253,7 +253,7 @@ final class PlaySession {
         @Override public void onPageFinished(WebView view, String url) {
             if (closed || error != null || !allowed(url)) return;
             ready = true;
-            if (game.driving()) connectDrivingControls();
+            if (game.driving() && Game.DRIVE_URL.equals(url)) connectDrivingControls();
             actions(held);
         }
 
@@ -279,24 +279,7 @@ final class PlaySession {
             if (!builtinAsset && !game.builtin() && !blockedCleartext) return null;
             String asset = builtinAsset ? request.getUrl().getPath() : "";
             String mime = null;
-            if (game.driving()) {
-                switch (asset) {
-                    case "/driving/index.html": mime = "text/html"; break;
-                    case "/driving/style.css": mime = "text/css"; break;
-                    case "/driving/game.json": mime = "application/json"; break;
-                    case "/driving/cover.jpg": mime = "image/jpeg"; break;
-                    case "/driving/drive.js":
-                    case "/driving/browser-controls.js":
-                    case "/driving/world.js":
-                    case "/driving/city.js":
-                    case "/driving/traffic.js":
-                    case "/driving/audio.js":
-                    case "/driving/effects.js":
-                    case "/driving/navigation.js":
-                    case "/driving/vendor/three.module.min.js": mime = "text/javascript"; break;
-                    default: break;
-                }
-            } else if (game.builtin()) {
+            if (game.builtin()) {
                 switch (asset) {
                     case "/controller-test/index.html": mime = "text/html"; break;
                     case "/controller-test/game.json": mime = "application/json"; break;

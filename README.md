@@ -3,9 +3,11 @@
 Link Arcade is a simple launcher for web games. Play in a browser or install the Android app on a phone or a Fire OS device. No account is required.
 
 - [Play in your browser](https://carlosalbaladejo.github.io/link-arcade/). The included games work with a keyboard, on-screen controls or a standard-mapped gamepad supported by your browser.
-- [Download the latest Android APK](https://github.com/carlosalbaladejo/link-arcade/releases/latest). The app includes an offline driving game and a **Controller Test**. Compatible games can use paired controllers, per-game button mappings, and on-screen controls on phones.
+- [Download the latest Android APK](https://github.com/carlosalbaladejo/link-arcade/releases/latest). Compatible games can use paired controllers, per-game button mappings, and on-screen controls on phones.
 
-The browser and Android app keep separate libraries on the device. Game progress is managed by each game, not by Link Arcade.
+The browser and Android app start with the same pre-added game links. They open the original websites and require a connection, just like links you add yourself. You can remove or re-add them; the built-in **Controller Test** works offline.
+
+The browser and Android app keep separate libraries on the device. Game progress is managed by each game, not by Link Arcade. Saves from the old, offline copy of A Little Drive do not transfer to the standalone website.
 
 ## Add a web game
 
@@ -20,6 +22,6 @@ To integrate with the Android controller mapper, follow the [Link Arcade game co
 
 The browser launcher lives in [docs/](docs/); the Android launcher lives in [src/](src/). From the repository root, run `python3 -m http.server 8080 --bind 127.0.0.1 --directory docs` to try the site locally.
 
-To build the APK, use JDK 17, Android SDK Platform 34, Build Tools 34.0.0, curl, tar and zip. Set `ANDROID_SDK_ROOT` if needed, then run `./build-apk.sh`. The build downloads and verifies pinned copies of jsoup and A Little Drive (for offline Android play) and signs the APK as `build/link-arcade.apk`. Keep signing keys private. Android updates require the same signing key as the previous installation.
+To build the APK, use JDK 17, Android SDK Platform 34, Build Tools 34.0.0, curl and zip. Set `ANDROID_SDK_ROOT` if needed, then run `./build-apk.sh`. The build downloads and verifies jsoup and signs the APK as `build/link-arcade.apk`. Keep signing keys private. Android updates require the same signing key as the previous installation.
 
 See the [changelog](CHANGELOG.md) and [release instructions](spec/releases.md).

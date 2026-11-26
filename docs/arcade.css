@@ -38,7 +38,8 @@ button:disabled { opacity: .6; cursor: wait; }
 .icon-link {
   display: inline-grid;
   place-items: center;
-  flex: 0 0 44px;
+  flex: none;
+  width: 44px;
   min-height: 44px;
   border: 1px solid var(--edge);
   border-radius: .55rem;

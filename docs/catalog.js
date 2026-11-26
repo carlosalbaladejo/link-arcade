@@ -1,4 +1,4 @@
-import { bundled, featured } from './games.js';
+import { bundled } from './games.js';
 
 const libraryKey = 'link-arcade-library-v1';
 const form = document.querySelector('#add-game');
@@ -6,6 +6,21 @@ const input = document.querySelector('#game-url');
 const status = document.querySelector('#import-status');
 const submit = form.querySelector('button');
 const grid = document.querySelector('#games');
+
+async function loadDefaults() {
+    try {
+        const response = await fetch('./default-games.json');
+        if (response.ok) {
+            const games = await response.json();
+            return games.map(({ url, title, cover, description }) => ({ url, title, cover, description }));
+        }
+    } catch {
+        // The built-in test and saved URLs are still available.
+    }
+    return [];
+}
+
+const defaults = await loadDefaults();
 
 function webUrl(value, base) {
     const url = new URL(value, base);
@@ -16,27 +31,37 @@ function webUrl(value, base) {
 }
 
 function readLibrary() {
+    let entries = [];
+    let seeded = new Set();
     try {
         const saved = JSON.parse(localStorage.getItem(libraryKey) || '[]');
-        return Array.isArray(saved) ? saved.filter(entry => {
+        const games = Array.isArray(saved) ? saved : saved?.games;
+        if (Array.isArray(saved?.seeded)) seeded = new Set(saved.seeded);
+        if (Array.isArray(games)) entries = games.filter(entry => {
             try {
                 return typeof entry.title === 'string' && !!webUrl(entry.url);
             } catch {
                 return false;
             }
-        }) : [];
+        });
     } catch {
-        return [];
+        // Corrupt or disabled storage starts with a fresh library.
     }
+    const additions = defaults.filter(game => {
+        if (seeded.has(game.url)) return false;
+        seeded.add(game.url);
+        return !entries.some(saved => saved.url === game.url);
+    });
+    return { games: [...additions, ...entries], seeded: [...seeded] };
 }
 
-let imported = readLibrary();
+let library = readLibrary();
 
 function saveLibrary(next) {
-    imported = next;
+    library.games = next;
     render();
     try {
-        localStorage.setItem(libraryKey, JSON.stringify(next));
+        localStorage.setItem(libraryKey, JSON.stringify(library));
         return true;
     } catch {
         return false;
@@ -111,7 +136,7 @@ function card(game, removable = false) {
         remove.textContent = 'Remove';
         remove.setAttribute('aria-label', 'Remove ' + game.title);
         remove.addEventListener('click', () => {
-            const saved = saveLibrary(imported.filter(entry => entry.url !== game.url));
+            const saved = saveLibrary(library.games.filter(entry => entry.url !== game.url));
             status.textContent = saved ? 'Game removed.' : 'Game removed for this visit only.';
             input.focus();
         });
@@ -123,9 +148,7 @@ function card(game, removable = false) {
 }
 
 function render() {
-    const savedCards = imported.filter(game => !featured.some(entry => entry.url === game.url));
-    grid.replaceChildren(...[...featured, ...bundled].map(game => card(game)),
-        ...savedCards.map(game => card(game, true)));
+    grid.replaceChildren(...library.games.map(game => card(game, true)), ...bundled.map(game => card(game)));
 }
 
 form.addEventListener('submit', async event => {
@@ -136,11 +159,11 @@ form.addEventListener('submit', async event => {
         const url = webUrl(input.value.trim());
         status.textContent = 'Looking up game details…';
         const entry = await inspect(url);
-        if ([...featured, ...imported].some(game => game.url === entry.url)) {
+        if (library.games.some(game => game.url === entry.url)) {
             status.textContent = 'This game is already in your library.';
             return;
         }
-        const saved = saveLibrary([...imported, entry]);
+        const saved = saveLibrary([...library.games, entry]);
         form.reset();
         status.textContent = saved ? 'Game saved in this browser.' : 'Game added for this visit only. The browser could not save it.';
     } catch (error) {
@@ -152,7 +175,7 @@ form.addEventListener('submit', async event => {
 
 window.addEventListener('storage', event => {
     if ((event.key === libraryKey || event.key === null) && event.storageArea === localStorage) {
-        imported = readLibrary();
+        library = readLibrary();
         render();
     }
 });
