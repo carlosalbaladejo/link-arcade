@@ -46,5 +46,106 @@
             }
         ],
         "description": "Drive through a coastal city that expands as you explore."
+    },
+    {
+        "url": "https://carlosalbaladejo.github.io/tidy-robot/",
+        "title": "Tidy Robot",
+        "cover": "https://carlosalbaladejo.github.io/tidy-robot/cover.jpg",
+        "actions": [
+            {
+                "id": "forward",
+                "label": "Avanzar",
+                "default": "dpad_up"
+            },
+            {
+                "id": "back",
+                "label": "Retroceder",
+                "default": "dpad_down"
+            },
+            {
+                "id": "left",
+                "label": "Girar a la izquierda",
+                "default": "dpad_left"
+            },
+            {
+                "id": "right",
+                "label": "Girar a la derecha",
+                "default": "dpad_right"
+            },
+            {
+                "id": "pick",
+                "label": "Coger / confirmar",
+                "default": "south"
+            },
+            {
+                "id": "drop",
+                "label": "Soltar / volver",
+                "default": "west"
+            },
+            {
+                "id": "menu",
+                "label": "Contrarreloj",
+                "default": "select"
+            },
+            {
+                "id": "pause",
+                "label": "Pausa",
+                "default": "start"
+            }
+        ],
+        "description": "Help a little robot put the toys back where they belong."
+    },
+    {
+        "url": "https://carlosalbaladejo.github.io/firemen-route/",
+        "title": "Firemen Route",
+        "cover": "https://carlosalbaladejo.github.io/firemen-route/cover.jpg",
+        "actions": [
+            {
+                "id": "up",
+                "label": "Arriba",
+                "default": "dpad_up"
+            },
+            {
+                "id": "down",
+                "label": "Abajo",
+                "default": "dpad_down"
+            },
+            {
+                "id": "left",
+                "label": "Izquierda",
+                "default": "dpad_left"
+            },
+            {
+                "id": "right",
+                "label": "Derecha",
+                "default": "dpad_right"
+            },
+            {
+                "id": "add",
+                "label": "Aceptar",
+                "default": "south"
+            },
+            {
+                "id": "undo",
+                "label": "Borrar instrucción / volver",
+                "default": "west"
+            },
+            {
+                "id": "run",
+                "label": "Simular programa",
+                "default": "north"
+            },
+            {
+                "id": "menu",
+                "label": "Opciones de la misión",
+                "default": "select"
+            },
+            {
+                "id": "pause",
+                "label": "Pausa / continuar",
+                "default": "start"
+            }
+        ],
+        "description": "Program a fire truck’s route through six different towns."
     }
 ]

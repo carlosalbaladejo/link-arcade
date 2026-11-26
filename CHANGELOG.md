@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.15]
+
+- Pre-added Tidy Robot and Firemen Route by URL in both the Android and browser libraries.
+
 ## [0.1.14]
 
 - Pre-added A Little Drive by URL in both the Android and browser libraries. The link can be removed and re-added like any other game.
