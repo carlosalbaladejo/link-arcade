@@ -6,6 +6,24 @@ const input = document.querySelector('#game-url');
 const status = document.querySelector('#import-status');
 const submit = form.querySelector('button');
 const grid = document.querySelector('#games');
+const fullscreen = document.querySelector('#fullscreen');
+
+if (document.fullscreenEnabled) {
+    fullscreen.hidden = false;
+    document.addEventListener('fullscreenchange', () => {
+        const label = document.fullscreenElement ? 'Exit full screen' : 'Full screen';
+        fullscreen.setAttribute('aria-label', label);
+        fullscreen.title = label;
+    });
+    fullscreen.addEventListener('click', async () => {
+        try {
+            if (document.fullscreenElement) await document.exitFullscreen();
+            else await document.documentElement.requestFullscreen();
+        } catch {
+            // Some browsers deny fullscreen in embedded or restricted contexts.
+        }
+    });
+}
 
 async function loadDefaults() {
     try {
