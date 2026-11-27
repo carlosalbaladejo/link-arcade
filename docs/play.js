@@ -1,10 +1,14 @@
-import { bundled, littleDriveUrl } from './games.js';
+import { littleDriveUrl, managedGame } from './games.js';
+import { connected, logical, preferences, prefKey } from './pad.js';
 
-const standardButtons = {
-    south: 0, east: 1, west: 2, north: 3, left_shoulder: 4, right_shoulder: 5,
-    left_trigger: 6, right_trigger: 7, select: 8, start: 9, left_stick: 10,
-    right_stick: 11, dpad_up: 12, dpad_down: 13, dpad_left: 14, dpad_right: 15,
-};
+let prefs = preferences();
+window.addEventListener('storage', event => {
+    if (event.key === prefKey) prefs = preferences();
+});
+const es = prefs.language === 'es';
+const label = (en, spanish) => es ? spanish : en;
+document.documentElement.lang = prefs.language;
+
 const touchGroups = [
     { dpad_left: '←', dpad_up: '↑', dpad_down: '↓', dpad_right: '→' },
     { select: 'Select', start: 'Start' },
@@ -17,7 +21,8 @@ const controls = document.querySelector('#touch-controls');
 const toggle = document.querySelector('#touch-toggle');
 
 async function launch(game) {
-    const response = await fetch(game.directory + 'game.json');
+    const response = await fetch(game.manifest);
+    if (new URL(response.url).origin !== game.manifest.origin) throw new Error('Unexpected manifest origin');
     if (!response.ok) throw new Error('Manifest unavailable');
     const { actions } = await response.json();
     const pointers = new Map();
@@ -29,19 +34,16 @@ async function launch(game) {
         if (!ready) return;
         const snapshot = JSON.stringify({ type: 'tv-game-input', version: 1, pressed });
         if (snapshot === previous) return;
-        frame.contentWindow.postMessage(snapshot, location.origin);
+        frame.contentWindow.postMessage(snapshot, new URL(game.url).origin);
         previous = snapshot;
     }
 
     function update() {
         const touches = new Set(pointers.values());
-        const pad = document.hasFocus() && !document.hidden
-            ? Array.from(navigator.getGamepads?.() || []).find(device => device?.mapping === 'standard')
-            : null;
-        const pressed = actions.filter(action => {
-            const index = standardButtons[action.default];
-            return touches.has(action.default) || pad?.buttons[index]?.pressed;
-        }).map(action => action.id);
+        const held = document.hasFocus() && !document.hidden
+            ? new Set(connected().flatMap(pad => [...logical(pad,prefs,true)])) : new Set();
+        const pressed = actions.filter(action => touches.has(action.default) || held.has(action.default))
+            .map(action => action.id);
         dispatch(pressed);
         for (const [name, button] of touchButtons) button.classList.toggle('held', touches.has(name));
     }
@@ -100,15 +102,15 @@ async function launch(game) {
     frame.addEventListener('load', () => {
         ready = true;
         previous = '';
-        frame.contentWindow.focus();
+        status.hidden = true;
+        frame.focus();
         update();
     });
     frame.title = game.title;
     document.title = game.title + ' · Link Arcade';
     document.querySelector('#playing').textContent = game.title;
-    frame.src = game.directory + 'index.html';
+    frame.src = game.url;
     frame.hidden = false;
-    status.hidden = true;
 
     function tick() {
         update();
@@ -117,12 +119,26 @@ async function launch(game) {
     requestAnimationFrame(tick);
 }
 
-const gameId = new URLSearchParams(location.search).get('game');
-const game = bundled.find(entry => entry.id === gameId);
-if (gameId === 'drive') {
-    location.replace(littleDriveUrl);
+const params = new URLSearchParams(location.search);
+const gameId = params.get('game');
+let game = null;
+try { game = managedGame(params.get('url') || ''); } catch { /* Invalid bookmark. */ }
+document.querySelector('.brand').textContent = label('← Catalog','← Catálogo');
+toggle.textContent = label('Touch controls','Controles táctiles');
+status.textContent = label('Loading game…','Cargando juego…');
+if (gameId === 'controls') {
+    location.replace('./settings.html#controller');
+} else if (gameId === 'drive') {
+    location.replace('./play.html?url=' + encodeURIComponent(littleDriveUrl));
 } else if (game) {
-    launch(game).catch(() => { status.textContent = 'Could not load the game. Return to the catalog and try again.'; });
+    // GitHub Pages projects share the same origin, including the games' language preferences.
+    if (new URL(game.url).origin === location.origin) {
+        try { localStorage.setItem(game.languageKey, prefs.language); } catch { /* use the game's own default */ }
+    }
+    launch(game).catch(() => {
+        status.textContent = label('Could not load the game. Return to the catalog and try again.',
+            'No se pudo cargar el juego. Vuelve al catálogo e inténtalo de nuevo.');
+    });
 } else {
-    status.textContent = 'Game not found.';
+    status.textContent = label('Game not found.','No se encontró el juego.');
 }

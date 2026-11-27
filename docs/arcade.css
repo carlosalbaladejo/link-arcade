@@ -84,3 +84,23 @@ footer { padding-bottom: 2rem; }
   .top { font-size: .87rem; }
   #touch-controls { flex-wrap: wrap; justify-content: center; }
 }
+
+.settings { padding-block: 1.3rem 3rem; }
+.settings h1 { margin-bottom: 1rem; }
+.settings section { margin-top: 1.5rem; padding: 1rem; border: 1px solid var(--edge); border-radius: .85rem; }
+.settings select { max-width: 100%; font: inherit; padding: .45rem; background: #182532; color: inherit; border: 1px solid var(--edge); border-radius: .45rem; }
+#settings-link { width: auto; padding-inline: .55rem; text-decoration: none; font-weight: 750; }
+.top { flex-wrap: wrap; }
+.pad-panel { text-align: center; }
+#diagram { display: block; margin: auto; width: min(100%, 30rem); }
+#diagram .shell { fill: #26394c; stroke: #5a758a; stroke-width: 2; }
+#diagram .well { fill: #101822; }
+.diagram-button rect { fill: #142031; }
+.diagram-button text { fill: #e6f4f5; font: 650 12px system-ui; text-anchor: middle; }
+.diagram-button.pressed rect { fill: var(--accent); }
+.diagram-button.pressed text { fill: #112822; }
+#profiles { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .8rem; }
+#devices label { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: .55rem; overflow-wrap: anywhere; }
+.mapping-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,8rem),1fr)); gap: .4rem; }
+.mapping-grid button { padding: .5rem .3rem; color: inherit; background: #223748; border-color: var(--edge); }
+.mapping-grid button[aria-pressed=true] { color: #112822; background: var(--accent); }

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Settings · Link Arcade</title>
+  <link rel="stylesheet" href="./arcade.css">
+  <script type="module" src="./settings.js"></script>
+</head>
+<body>
+  <header class="top"><a class="brand" href="./" data-text="catalog">← Catalog</a><strong>Link Arcade</strong></header>
+  <main class="catalog settings">
+    <h1 data-text="settings">Settings</h1>
+    <label><span data-text="language">Language</span>
+      <select id="language"><option value="en">English</option><option value="es">Español</option></select>
+    </label>
+    <section id="controller">
+      <h2 data-text="test">Controller test</h2>
+      <div class="pad-panel">
+        <svg id="diagram" viewBox="0 0 480 270" aria-hidden="true">
+          <path class="shell" d="M85 52C59 55 47 69 41 99L22 218C12 265 63 277 82 245L115 194C128 170 144 214 169 216C200 225 218 193 220 177H260C262 193 280 225 311 216C336 214 352 170 365 194L398 245C417 277 468 265 458 218L439 99C433 69 421 55 395 52Z"/>
+          <circle class="well" cx="109" cy="121" r="49"/><circle class="well" cx="371" cy="121" r="49"/>
+          <circle class="well" cx="179" cy="177" r="31"/><circle class="well" cx="301" cy="177" r="31"/>
+        </svg>
+        <p id="feedback" role="status"></p>
+        <button id="sound" type="button" aria-pressed="false"></button>
+      </div>
+    </section>
+    <section>
+      <h2 data-text="profiles">Controller profiles</h2>
+      <form id="create-profile" class="form-row">
+        <input id="profile-name" required maxlength="40" aria-label="Profile name">
+        <button type="submit" data-text="create">Create mapping</button>
+      </form>
+      <div id="profiles"></div>
+      <div id="editor" hidden>
+        <h3 id="editing"></h3>
+        <p id="capture" role="status"></p>
+        <div id="bind-buttons" class="mapping-grid"></div>
+        <div class="form-row">
+          <button id="save" type="button" data-text="save">Save profile</button>
+          <button id="delete-profile" type="button" data-text="remove" hidden>Delete profile</button>
+          <button id="cancel" type="button" data-text="cancel">Cancel</button>
+        </div>
+      </div>
+      <h3 data-text="devices">Connected controllers</h3>
+      <div id="devices"></div>
+      <p id="notice" role="status"></p>
+    </section>
+  </main>
+</body>
+</html>

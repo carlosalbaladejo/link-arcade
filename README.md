@@ -9,7 +9,11 @@ The browser and Android app start with the same pre-added game links. They open 
 
 The browser and Android app keep separate libraries on the device. Game progress is managed by each game, not by Link Arcade. Saves from the old, offline copy of A Little Drive do not transfer to the standalone website.
 
-## Android settings
+## Settings
+
+The web catalog has **Settings** on its main page. Use it to select a language, test buttons and both sticks, or create and assign reusable controller mappings. The browser saves these settings separately from the Android app. The browser may require a physical button press to detect a controller and a click on **Enable sound** before playing feedback.
+
+### Android settings
 
 - **Language:** Choose Spanish or English for Link Arcade. Supported games start in the same language; other pages keep their own behavior.
 - **Controller test:** Press buttons or move either stick to check the directional, face, center and shoulder controls. The test uses the profile assigned to each connected controller.
@@ -22,7 +26,7 @@ While a game is opening, **Cancel loading** returns to the catalog without waiti
 Open **Add by URL** and paste the address of the playable page, not the address of its repository or JSON file. Any game added this way stays in your library; it is not added to everyone else's catalog.
 
 - **Android:** Preview and save the game. Use HTTPS where possible. HTTP is allowed after an unencrypted-connection warning. A compatible game gets the launcher controls; a normal web game uses its own.
-- **Browser:** Added games are saved in this browser and stay in the library when you come back. They don't sync across devices or browser profiles, and clearing the site's data removes them. Games open in a new tab and use their own controls. If the host allows the browser to read its metadata (same origin or CORS), Link Arcade shows its title and cover; otherwise it saves the link with the site's hostname.
+- **Browser:** Added games are saved in this browser and stay in the library when you come back. They don't sync across devices or browser profiles, and clearing the site's data removes them. The three included games open in the Link Arcade player and use the browser’s saved controller profiles and language. Other links open in a new tab and use their own controls. If the host allows the browser to read its metadata (same origin or CORS), Link Arcade shows its title and cover; otherwise it saves the link with the site's hostname.
 
 ## Make a game or extend Link Arcade
 

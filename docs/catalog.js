@@ -1,4 +1,31 @@
-import { bundled } from './games.js';
+import { managedGame } from './games.js';
+import { preferences, prefKey } from './pad.js';
+
+const labels = {
+    intro: ['Your web arcade','Tu arcade web'],
+    subtitle: ['Play in your browser with a keyboard, gamepad or touch controls.','Juega en el navegador con teclado, mando o controles táctiles.'],
+    games: ['Games','Juegos'], addHeading: ['Add by URL','Añadir por URL'], urlLabel: ['Game page URL','URL del juego'],
+    add: ['Add','Añadir'], footer: ['Create your own games','Crea tus propios juegos'],
+    settings: ['Settings','Configuración'], play: ['Play','Jugar'], remove: ['Remove','Quitar'],
+    fullscreen: ['Full screen','Pantalla completa'], exitFullscreen: ['Exit full screen','Salir de pantalla completa'],
+    duplicate: ['This game is already in your library.','Este juego ya está añadido a tu biblioteca.'],
+    lookup: ['Looking up game details…','Buscando información del juego…'],
+    removed: ['Game removed.','Juego quitado.'], removedTemp: ['Game removed for this visit only.','Juego quitado solo durante esta visita.'],
+    saved: ['Game saved in this browser.','Juego guardado en este navegador.'],
+    savedTemp: ['Game added for this visit only. The browser could not save it.','El navegador no pudo guardar el juego; se añadió solo para esta visita.'],
+    invalid: ['Use an HTTP or HTTPS link without credentials.','Usa un enlace HTTP o HTTPS sin credenciales.'],
+};
+let language = preferences().language;
+const t = key => labels[key][language === 'es' ? 1 : 0];
+
+function translate() {
+    document.documentElement.lang = language;
+    document.querySelectorAll('[data-copy]').forEach(node => node.textContent = t(node.dataset.copy));
+    document.querySelector('#settings-link').textContent = t('settings');
+    const label = t(document.fullscreenElement ? 'exitFullscreen' : 'fullscreen');
+    fullscreen.title = label;
+    fullscreen.setAttribute('aria-label',label);
+}
 
 const libraryKey = 'link-arcade-library-v1';
 const form = document.querySelector('#add-game');
@@ -10,11 +37,7 @@ const fullscreen = document.querySelector('#fullscreen');
 
 if (document.fullscreenEnabled) {
     fullscreen.hidden = false;
-    document.addEventListener('fullscreenchange', () => {
-        const label = document.fullscreenElement ? 'Exit full screen' : 'Full screen';
-        fullscreen.setAttribute('aria-label', label);
-        fullscreen.title = label;
-    });
+    document.addEventListener('fullscreenchange', translate);
     fullscreen.addEventListener('click', async () => {
         try {
             if (document.fullscreenElement) await document.exitFullscreen();
@@ -33,7 +56,7 @@ async function loadDefaults() {
             return games.map(({ url, title, cover, description }) => ({ url, title, cover, description }));
         }
     } catch {
-        // The built-in test and saved URLs are still available.
+        // Saved URLs are still available.
     }
     return [];
 }
@@ -43,7 +66,7 @@ const defaults = await loadDefaults();
 function webUrl(value, base) {
     const url = new URL(value, base);
     if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) {
-        throw new Error('Use an HTTP or HTTPS link without credentials.');
+        throw new Error(t('invalid'));
     }
     return url;
 }
@@ -139,11 +162,12 @@ function card(game, removable = false) {
     actions.className = 'card-actions';
     const play = document.createElement('a');
     play.className = 'play-link';
-    play.href = game.id ? './play.html?game=' + game.id : game.url;
-    play.textContent = 'Play';
-    play.setAttribute('aria-label', 'Play ' + game.title);
+    const managed = managedGame(game.url);
+    play.href = managed ? './play.html?url=' + encodeURIComponent(game.url) : game.url;
+    play.textContent = t('play');
+    play.setAttribute('aria-label', t('play') + ' ' + game.title);
     actions.append(play);
-    if (!game.id) {
+    if (!managed) {
         play.target = '_blank';
         play.rel = 'noopener noreferrer';
     }
@@ -151,11 +175,11 @@ function card(game, removable = false) {
         const remove = document.createElement('button');
         remove.type = 'button';
         remove.className = 'remove';
-        remove.textContent = 'Remove';
-        remove.setAttribute('aria-label', 'Remove ' + game.title);
+        remove.textContent = t('remove');
+        remove.setAttribute('aria-label', t('remove') + ' ' + game.title);
         remove.addEventListener('click', () => {
             const saved = saveLibrary(library.games.filter(entry => entry.url !== game.url));
-            status.textContent = saved ? 'Game removed.' : 'Game removed for this visit only.';
+            status.textContent = t(saved ? 'removed' : 'removedTemp');
             input.focus();
         });
         actions.append(remove);
@@ -166,7 +190,7 @@ function card(game, removable = false) {
 }
 
 function render() {
-    grid.replaceChildren(...library.games.map(game => card(game, true)), ...bundled.map(game => card(game)));
+    grid.replaceChildren(...library.games.map(game => card(game, true)));
 }
 
 form.addEventListener('submit', async event => {
@@ -175,15 +199,15 @@ form.addEventListener('submit', async event => {
     submit.disabled = true;
     try {
         const url = webUrl(input.value.trim());
-        status.textContent = 'Looking up game details…';
+        status.textContent = t('lookup');
         const entry = await inspect(url);
         if (library.games.some(game => game.url === entry.url)) {
-            status.textContent = 'This game is already in your library.';
+            status.textContent = t('duplicate');
             return;
         }
         const saved = saveLibrary([...library.games, entry]);
         form.reset();
-        status.textContent = saved ? 'Game saved in this browser.' : 'Game added for this visit only. The browser could not save it.';
+        status.textContent = t(saved ? 'saved' : 'savedTemp');
     } catch (error) {
         status.textContent = error.message;
     } finally {
@@ -192,10 +216,16 @@ form.addEventListener('submit', async event => {
 });
 
 window.addEventListener('storage', event => {
+    if (event.key === prefKey) {
+        language = preferences().language;
+        translate();
+        render();
+    }
     if ((event.key === libraryKey || event.key === null) && event.storageArea === localStorage) {
         library = readLibrary();
         render();
     }
 });
 
+translate();
 render();

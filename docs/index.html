@@ -12,6 +12,7 @@
   <header class="top">
     <a class="brand" href="./"><span aria-hidden="true">✦</span> Link Arcade</a>
     <nav class="top-links" aria-label="Arcade controls and links">
+      <a id="settings-link" class="icon-link" href="./settings.html">Settings</a>
       <button id="fullscreen" type="button" class="icon-link" aria-label="Full screen" title="Full screen" hidden>
         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path class="expand" d="M9 9 4 4m0 4V4h4m7 5 5-5m-4 0h4v4m-5 7 5 5m0-4v4h-4m-7-5-5 5m4 0H4v-4"/>
@@ -33,25 +34,25 @@
   </header>
   <main class="catalog">
     <section class="intro">
-      <h1>Your web arcade</h1>
-      <p>Play in your browser with a keyboard, gamepad or touch controls.</p>
+      <h1 data-copy="intro">Your web arcade</h1>
+      <p data-copy="subtitle">Play in your browser with a keyboard, gamepad or touch controls.</p>
     </section>
     <section aria-labelledby="games-heading">
-      <h2 id="games-heading">Games</h2>
+      <h2 id="games-heading" data-copy="games">Games</h2>
       <div class="grid" id="games"></div>
     </section>
     <section class="imports" aria-labelledby="add-heading">
-      <h2 id="add-heading">Add by URL</h2>
+      <h2 id="add-heading" data-copy="addHeading">Add by URL</h2>
       <form id="add-game">
-        <label for="game-url">Game page URL</label>
+        <label for="game-url" data-copy="urlLabel">Game page URL</label>
         <div class="form-row">
           <input id="game-url" name="url" type="url" required placeholder="https://example.com/game/">
-          <button type="submit">Add</button>
+          <button type="submit" data-copy="add">Add</button>
         </div>
         <p id="import-status" role="status"></p>
       </form>
     </section>
   </main>
-  <footer><a href="https://github.com/carlosalbaladejo/link-arcade/blob/main/spec/game-compatibility.md">Create your own games</a></footer>
+  <footer><a href="https://github.com/carlosalbaladejo/link-arcade/blob/main/spec/game-compatibility.md" data-copy="footer">Create your own games</a></footer>
 </body>
 </html>
