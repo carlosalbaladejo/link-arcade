@@ -18,15 +18,34 @@ import java.util.Set;
 
 final class Library {
     private final SharedPreferences storage;
+    final ControllerProfiles profiles;
     final List<Game> games = new ArrayList<>();
 
     Library(Context context) throws Exception {
         storage = context.getSharedPreferences("library", Context.MODE_PRIVATE);
+        profiles = new ControllerProfiles(storage);
         JSONArray saved = new JSONArray(storage.getString("games", "[]"));
         for (int i = 0; i < saved.length(); i++) games.add(Game.restore(saved.getJSONObject(i)));
+        retirePreviewEntries();
         try (InputStream asset = context.getAssets().open("default-games.json")) {
             seedDefaults(new JSONArray(new String(Imports.read(asset, 65536), StandardCharsets.UTF_8)));
         }
+    }
+
+    private void retirePreviewEntries() throws Exception {
+        String migration = "retired_preview_catalog_v1";
+        if (storage.getBoolean(migration, false)) return;
+        List<Game> next = new ArrayList<>();
+        SharedPreferences.Editor editor = storage.edit().putBoolean(migration, true);
+        for (Game game : games) {
+            android.net.Uri url = android.net.Uri.parse(game.url);
+            boolean oldIronEntry = "https://iron-caravan-bxf.pages.dev/".equals(game.url);
+            boolean oldLunarEntry = "Liebre Lunar".equals(game.title)
+                    && "http".equals(url.getScheme()) && url.getPort() == 8094;
+            if (oldIronEntry || oldLunarEntry) clearBindings(editor, game);
+            else next.add(game);
+        }
+        save(next, editor);
     }
 
     private void seedDefaults(JSONArray defaults) throws Exception {
@@ -37,7 +56,7 @@ final class Library {
             Game game = Game.restore(defaults.getJSONObject(i));
             if (seeded.add(game.url)) {
                 changed = true;
-                if (find(game.url) == null) additions.add(game);
+                if (duplicate(game.url) == null) additions.add(game);
             }
         }
         if (changed) {
@@ -47,12 +66,37 @@ final class Library {
     }
 
     void add(Game game) throws Exception {
-        for (Game saved : games) {
-            if (saved.url.equals(game.url)) throw new IllegalArgumentException("This game is already in your library.");
-        }
+        if (duplicate(game.url) != null) throw new DuplicateGame();
         List<Game> next = new ArrayList<>(games);
         next.add(game);
         save(next, storage.edit());
+    }
+
+    static final class DuplicateGame extends Exception {}
+
+    Game duplicate(String url) {
+        String key = importKey(url);
+        for (Game game : games) {
+            if (key.equals(importKey(game.url))) return game;
+        }
+        return null;
+    }
+
+    private static String importKey(String url) {
+        try {
+            java.net.URI normalized = Imports.webUri(url);
+            String origin = Imports.origin(normalized);
+            String path = normalized.getRawPath();
+            // These published games serve the same entry point at both directory and index URLs.
+            if (origin.equals("https://carlosalbaladejo.github.io")
+                    && path.matches("/(little-drive|tidy-robot|firemen-route)(/index\\.html|/)?")) {
+                path = path.replaceFirst("(/index\\.html|/)$", "") + "/";
+            }
+            String query = normalized.getRawQuery();
+            return origin + path + (query == null || query.isEmpty() ? "" : "?" + query);
+        } catch (java.io.IOException invalid) {
+            return url;
+        }
     }
 
     Game find(String url) {
@@ -74,11 +118,15 @@ final class Library {
         List<Game> next = new ArrayList<>(games);
         next.removeIf(saved -> saved.url.equals(game.url));
         SharedPreferences.Editor editor = storage.edit();
-        String prefix = "map/" + game.url.length() + ":" + game.url + "/";
+        clearBindings(editor, game);
+        save(next, editor);
+    }
+
+    private void clearBindings(SharedPreferences.Editor editor, Game game) {
+        String prefix = key(game, "");
         for (String key : storage.getAll().keySet()) {
             if (key.startsWith(prefix)) editor.remove(key);
         }
-        save(next, editor);
     }
 
     private void save(List<Game> next, SharedPreferences.Editor editor) throws Exception {
@@ -87,6 +135,12 @@ final class Library {
         if (!editor.putString("games", result.toString()).commit()) throw new Exception("Could not save the library.");
         games.clear();
         games.addAll(next);
+    }
+
+    String language(String fallback) { return storage.getString("language", fallback); }
+
+    boolean saveLanguage(String value) {
+        return storage.edit().putString("language", value).commit();
     }
 
     private String key(Game game, String profile) {
@@ -127,14 +181,22 @@ final class Library {
 
     Set<String> active(Game game, Map<String, Map<String, Set<String>>> input) {
         Set<String> active = new LinkedHashSet<>();
-        Map<String, Map<String, String>> profiles = new LinkedHashMap<>();
         for (Map.Entry<String, Map<String, Set<String>>> source : input.entrySet()) {
-            String profile = source.getKey();
-            Map<String, String> bindings = profiles.computeIfAbsent(profile, ignored -> bindings(game, profile));
-            for (Map.Entry<String, String> action : bindings.entrySet()) {
-                for (Set<String> held : source.getValue().values()) {
-                    if (held.contains(action.getValue())) active.add(action.getKey());
+            String device = source.getKey();
+            if ("touch".equals(device)) {
+                for (Map.Entry<String, String> action : bindings(game, device).entrySet()) {
+                    if (source.getValue().values().stream().anyMatch(held -> held.contains(action.getValue()))) {
+                        active.add(action.getKey());
+                    }
                 }
+                continue;
+            }
+            String legacy = Controls.legacyProfile(device);
+            Set<String> mapped = profiles.translated(device, source.getValue(), true);
+            // Explicit global profiles take over from the older per-game hardware mappings.
+            Map<String, String> bindings = bindings(game, profiles.hasAssignment(device) ? "" : legacy);
+            for (Map.Entry<String, String> action : bindings.entrySet()) {
+                if (mapped.contains(action.getValue())) active.add(action.getKey());
             }
         }
         return active;

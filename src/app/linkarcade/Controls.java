@@ -5,6 +5,8 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -12,6 +14,18 @@ import java.util.Map;
 import java.util.Set;
 
 final class Controls {
+    static final List<String> LAYOUT = Collections.unmodifiableList(Arrays.asList(
+            "dpad_up", "dpad_down", "dpad_left", "dpad_right",
+            "south", "east", "west", "north", "left_shoulder", "right_shoulder",
+            "left_trigger", "right_trigger", "left_stick", "right_stick", "select", "start"));
+    static final List<String> STICK_DIRECTIONS = Collections.unmodifiableList(Arrays.asList(
+            "left_stick_up", "left_stick_down", "left_stick_left", "left_stick_right",
+            "right_stick_up", "right_stick_down", "right_stick_left", "right_stick_right"));
+
+    static boolean mappable(String id) {
+        return LAYOUT.contains(id) || STICK_DIRECTIONS.contains(id);
+    }
+
     final Map<String, Map<String, Set<String>>> held = new LinkedHashMap<>();
 
     boolean set(String profile, String source, Set<String> buttons) {
@@ -48,6 +62,14 @@ final class Controls {
         return "pad/" + device.getVendorId() + "/" + device.getProductId() + "/" + device.getName();
     }
 
+    static String identity(InputDevice device) {
+        return profile(device) + "/" + device.getDescriptor();
+    }
+
+    static String legacyProfile(String identity) {
+        return identity.substring(0, identity.lastIndexOf('/'));
+    }
+
     static String button(int key) {
         switch (key) {
             case KeyEvent.KEYCODE_DPAD_UP: return "dpad_up";
@@ -72,17 +94,11 @@ final class Controls {
 
     static Set<String> axes(MotionEvent event) {
         Set<String> result = new LinkedHashSet<>();
-        float x = event.getAxisValue(MotionEvent.AXIS_HAT_X);
-        float y = event.getAxisValue(MotionEvent.AXIS_HAT_Y);
-        // Treat the left stick as a digital direction when the D-pad is idle.
-        if (Math.abs(x) < .5f && Math.abs(y) < .5f) {
-            x = event.getAxisValue(MotionEvent.AXIS_X);
-            y = event.getAxisValue(MotionEvent.AXIS_Y);
-        }
-        if (x <= -.55f) result.add("dpad_left");
-        if (x >= .55f) result.add("dpad_right");
-        if (y <= -.55f) result.add("dpad_up");
-        if (y >= .55f) result.add("dpad_down");
+        directions(result, "dpad", event.getAxisValue(MotionEvent.AXIS_HAT_X),
+                event.getAxisValue(MotionEvent.AXIS_HAT_Y));
+        directions(result, "left_stick", axis(event, MotionEvent.AXIS_X), axis(event, MotionEvent.AXIS_Y));
+        directions(result, "right_stick", axis(event, MotionEvent.AXIS_Z, MotionEvent.AXIS_RX),
+                axis(event, MotionEvent.AXIS_RZ, MotionEvent.AXIS_RY));
         if (Math.max(event.getAxisValue(MotionEvent.AXIS_LTRIGGER), event.getAxisValue(MotionEvent.AXIS_BRAKE)) >= .55f) {
             result.add("left_trigger");
         }
@@ -91,4 +107,23 @@ final class Controls {
         }
         return result;
     }
+
+    private static float axis(MotionEvent event, int... candidates) {
+        for (int axis : candidates) {
+            InputDevice.MotionRange range = event.getDevice().getMotionRange(axis, event.getSource());
+            if (range == null || range.getMin() >= 0 || range.getMax() <= 0) continue;
+            float value = event.getAxisValue(axis);
+            if (Math.abs(value) <= range.getFlat()) return 0;
+            return value < 0 ? value / -range.getMin() : value / range.getMax();
+        }
+        return 0;
+    }
+
+    private static void directions(Set<String> result, String prefix, float x, float y) {
+        if (x <= -.55f) result.add(prefix + "_left");
+        if (x >= .55f) result.add(prefix + "_right");
+        if (y <= -.55f) result.add(prefix + "_up");
+        if (y >= .55f) result.add(prefix + "_down");
+    }
+
 }

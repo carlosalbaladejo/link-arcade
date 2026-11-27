@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.18]
+
+- Add cancelable game loading and automatic retries for temporary connection failures.
+- Add English and Spanish settings; supported games inherit the launcher's selected language.
+- Add an offline controller test with visual and audio feedback, and reusable profiles for remapping and assigning controllers.
+- Keep the three starter games as links, without bundling their runtimes.
+- Warn when a game is already saved, including when its link redirects to a saved page.
+
 ## [0.1.15]
 
 - Pre-added Tidy Robot and Firemen Route by URL in both the Android and browser libraries.

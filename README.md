@@ -3,11 +3,19 @@
 Link Arcade is a simple launcher for web games. Play in a browser or install the Android app on a phone or a Fire OS device. No account is required.
 
 - [Play in your browser](https://carlosalbaladejo.github.io/link-arcade/). The included games work with a keyboard, on-screen controls or a standard-mapped gamepad supported by your browser.
-- [Download the latest Android APK](https://github.com/carlosalbaladejo/link-arcade/releases/latest). Compatible games can use paired controllers, per-game button mappings, and on-screen controls on phones.
+- [Download the latest Android APK](https://github.com/carlosalbaladejo/link-arcade/releases/latest). Compatible games can use paired controllers, reusable controller profiles, per-game button mappings, and on-screen controls on phones.
 
-The browser and Android app start with the same pre-added game links. They open the original websites and require a connection, just like links you add yourself. You can remove or re-add them; the built-in **Controller Test** works offline.
+The browser and Android app start with the same pre-added game links. They open the original websites and require a connection, just like links you add yourself. You can remove or re-add them. Android includes no game runtime; its native **Settings → Controller test** works offline.
 
 The browser and Android app keep separate libraries on the device. Game progress is managed by each game, not by Link Arcade. Saves from the old, offline copy of A Little Drive do not transfer to the standalone website.
+
+## Android settings
+
+- **Language:** Choose Spanish or English for Link Arcade. Supported games start in the same language; other pages keep their own behavior.
+- **Controller test:** Press buttons or move either stick to check the directional, face, center and shoulder controls. The test uses the profile assigned to each connected controller.
+- **Controller profiles:** Select **Create mapping**, name the profile, choose a logical button, and press a physical button or move one stick direction. If that input is already in use, the two assignments swap. Save it, then select each connected controller that should use the profile. A named profile takes precedence over legacy per-game hardware bindings for that controller. Selecting **Standard layout** restores those older bindings; touch mappings are unaffected.
+
+While a game is opening, **Cancel loading** returns to the catalog without waiting for the site.
 
 ## Add a web game
 

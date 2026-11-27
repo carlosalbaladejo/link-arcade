@@ -28,7 +28,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,12 +45,14 @@ public final class MainActivity extends Activity implements InputManager.InputDe
     };
     private final Map<String, Frame> catalogCovers = new HashMap<>();
     private final Map<String, Frame> coverRefreshes = new HashMap<>();
-    private final Controls controls = new Controls();
+    final Controls controls = new Controls();
     Style style;
     private Library library;
-    private Game diagnostic;
+    private Settings settings;
+    private String language;
+    private final Set<String> capturedKeys = new java.util.HashSet<>();
     private PlaySession play;
-    private LinearLayout screen;
+    LinearLayout screen;
     private InputManager devices;
     private boolean tv;
     private Game mappingGame;
@@ -61,6 +62,7 @@ public final class MainActivity extends Activity implements InputManager.InputDe
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         style = new Style(this);
+        language = "es".equals(java.util.Locale.getDefault().getLanguage()) ? "es" : "en";
         UiModeManager modes = (UiModeManager) getSystemService(Context.UI_MODE_SERVICE);
         tv = modes.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION
                 || getPackageManager().hasSystemFeature("amazon.hardware.fire_tv")
@@ -71,21 +73,29 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         getWindow().setNavigationBarColor(Style.BG);
         try {
             library = new Library(this);
-            diagnostic = bundled(Game.TEST_URL, "controller-test/game.json");
+            language = library.language(language);
+            settings = new Settings(this, library.profiles);
             catalog(null);
         } catch (Exception error) {
             page();
-            style.append(screen, style.text("Could not open the catalog.", 22, Style.TEXT), 0);
+            style.append(screen, style.text(t("Could not open the catalog.", "No se pudo abrir el catálogo."), 22, Style.TEXT), 0);
         }
     }
 
-    private Game bundled(String url, String manifest) throws Exception {
-        try (InputStream stream = getAssets().open(manifest)) {
-            return Game.fromManifest(url, "", Imports.manifest(Imports.read(stream, 65536)));
-        }
+    String language() { return language; }
+
+    boolean spanish() { return "es".equals(language); }
+
+    boolean isTv() { return tv; }
+
+    String t(String en, String es) { return spanish() ? es : en; }
+
+    void changeLanguage(String value) {
+        if (library.saveLanguage(value)) language = value;
+        else toast(t("Could not save the language.", "No se pudo guardar el idioma."));
     }
 
-    private void page() {
+    void page() {
         catalogCovers.clear();
         setPlayCutout(false);
         getWindow().getDecorView().setSystemUiVisibility(tv ? immersive() : 0);
@@ -119,32 +129,40 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         getWindow().setAttributes(attributes);
     }
 
-    private void heading(String title, String subtitle) {
+    void heading(String title, String subtitle) {
         TextView text = style.text(title, tv ? 38 : 32, Style.TEXT);
         text.setTypeface(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD);
         style.append(screen, text, 0);
         if (!subtitle.isEmpty()) style.append(screen, style.text(subtitle, 15, Style.MUTED), 5);
     }
 
-    private Button appendButton(LinearLayout parent, String title, int margin, Runnable action) {
+    Button appendButton(LinearLayout parent, String title, int margin, Runnable action) {
         Button button = style.button(title);
         button.setOnClickListener(view -> action.run());
         style.append(parent, button, margin);
         return button;
     }
 
-    private void catalog(Game returnTo) {
+    void catalog(Game returnTo) {
         capture = null;
         mappingGame = null;
         mappingProfile = null;
         page();
-        heading("Link Arcade", "Web game catalog");
-        Button add = appendButton(screen, "+  Add by URL", 18, this::addDialog);
+        heading("Link Arcade", t("Web game catalog", "Catálogo de juegos web"));
+        LinearLayout toolbar = style.row();
+        style.append(screen, toolbar, 18);
+        Button add = style.button(t("+ Add by URL", "+ Añadir por URL"));
+        add.setOnClickListener(view -> addDialog());
+        toolbar.addView(add, new LinearLayout.LayoutParams(0, -2, 1));
+        Button settingsButton = style.button(t("Settings", "Configuración"));
+        settingsButton.setOnClickListener(view -> settings.show());
+        LinearLayout.LayoutParams settingsLayout = new LinearLayout.LayoutParams(0, -2, 1);
+        settingsLayout.leftMargin = style.dp(8);
+        toolbar.addView(settingsButton, settingsLayout);
         Game focus = returnTo;
         LinearLayout row = null;
         List<Game> entries = new ArrayList<>();
         entries.addAll(library.games);
-        entries.add(diagnostic);
         for (int i = 0; i < entries.size(); i++) {
             Game game = entries.get(i);
             if (!tv || i % 3 == 0) {
@@ -173,7 +191,7 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         tile.setPadding(style.dp(9), style.dp(9), style.dp(9), style.dp(9));
         tile.setBackground(style.panel(Style.CARD, Style.EDGE, 15));
         tile.setFocusable(true);
-        tile.setContentDescription(game.title + (game.compatible() ? ", gamepad compatible" : ", web page"));
+        tile.setContentDescription(game.title + (game.compatible() ? t(", gamepad compatible", ", compatible con mando") : t(", web page", ", página web")));
         tile.setOnFocusChangeListener((view, focused) -> tile.setBackground(style.panel(
                 focused ? 0xff244a50 : Style.CARD, focused ? Style.MINT : Style.EDGE, 15)));
         Frame image = new Frame(game);
@@ -185,9 +203,8 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         title.setMaxLines(1);
         title.setEllipsize(TextUtils.TruncateAt.END);
         style.append(tile, title, 7);
-        style.append(tile, style.text(game.builtin() ? "Built-in test · offline"
-                : game.compatible() ? "Gamepad compatible" : "Web page", 13, Style.MUTED), 3);
-        tile.setOnClickListener(view -> details(game.builtin() ? game : library.find(game.url)));
+        style.append(tile, style.text(game.compatible() ? t("Gamepad compatible", "Compatible con mando") : t("Web page", "Página web"), 13, Style.MUTED), 3);
+        tile.setOnClickListener(view -> details(library.find(game.url)));
         return tile;
     }
 
@@ -199,14 +216,6 @@ public final class MainActivity extends Activity implements InputManager.InputDe
             view.setClipToOutline(true);
             view.setImageResource(R.drawable.arcade);
             view.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            if (game == diagnostic) {
-                try (InputStream stream = getAssets().open("controller-test/cover.png")) {
-                    Bitmap cover = BitmapFactory.decodeStream(stream);
-                    if (cover != null) show(cover);
-                } catch (IOException ignored) {
-                    // Keep the launcher icon if the local image is unavailable.
-                }
-            }
             Bitmap cached = covers.get(game.url);
             if (cached != null) show(cached);
         }
@@ -281,22 +290,20 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         panel.addView(image.view, new LinearLayout.LayoutParams(-1, style.dp(100)));
         new AlertDialog.Builder(this).setTitle(game.title)
                 .setView(panel)
-                .setMessage(game.builtin() ? "Test all ten buttons, pausing and simultaneous presses."
-                        : game.compatible() ? "Works with Link Arcade gamepad controls." : "Uses the web page’s own controls.")
-                .setPositiveButton("Play", (dialog, button) -> open(game))
-                .setNeutralButton(game.compatible() ? "Controls" : "Close", (dialog, button) -> {
+                .setMessage(game.compatible() ? t("Works with Link Arcade gamepad controls.", "Compatible con los controles de Link Arcade.")
+                        : t("Uses the web page’s own controls.", "Usa los controles de la página web."))
+                .setPositiveButton(t("Play", "Jugar"), (dialog, button) -> open(game))
+                .setNeutralButton(game.compatible() ? t("Controls", "Controles") : t("Close", "Cerrar"), (dialog, button) -> {
                     if (game.compatible()) profiles(game);
                 })
-                .setNegativeButton(game.builtin() ? "Cancel" : "Remove", (dialog, button) -> {
-                    if (!game.builtin()) confirmRemove(game);
-                }).show();
-        if (!game.builtin()) refreshCover(game, image);
+                .setNegativeButton(t("Remove", "Quitar"), (dialog, button) -> confirmRemove(game)).show();
+        refreshCover(game, image);
     }
 
     private void confirmRemove(Game game) {
-        new AlertDialog.Builder(this).setTitle("Remove from your library?")
-                .setMessage(game.title).setNegativeButton("Cancel", null)
-                .setPositiveButton("Remove", (dialog, button) -> {
+        new AlertDialog.Builder(this).setTitle(t("Remove from your library?", "¿Quitar de tu biblioteca?"))
+                .setMessage(game.title).setNegativeButton(t("Cancel", "Cancelar"), null)
+                .setPositiveButton(t("Remove", "Quitar"), (dialog, button) -> {
                     try {
                         library.remove(game);
                         covers.remove(game.url);
@@ -314,8 +321,8 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         url.setHint("https://… or http://…");
         url.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
         url.setPadding(style.dp(24), style.dp(12), style.dp(24), style.dp(12));
-        AlertDialog input = new AlertDialog.Builder(this).setTitle("Add game")
-                .setView(url).setNegativeButton("Cancel", null).setPositiveButton("Look up", null).create();
+        AlertDialog input = new AlertDialog.Builder(this).setTitle(t("Add game", "Añadir juego"))
+                .setView(url).setNegativeButton(t("Cancel", "Cancelar"), null).setPositiveButton(t("Look up", "Buscar"), null).create();
         input.setOnShowListener(dialog -> {
             url.requestFocus();
             Button search = input.getButton(AlertDialog.BUTTON_POSITIVE);
@@ -327,13 +334,17 @@ public final class MainActivity extends Activity implements InputManager.InputDe
                     url.setError(error.getMessage());
                     return;
                 }
+                if (library.duplicate(address.toString()) != null) {
+                    showDuplicate(url);
+                    return;
+                }
                 if ("http".equals(address.getScheme())) {
-                    AlertDialog warning = new AlertDialog.Builder(this).setTitle("Unencrypted HTTP connection")
+                    AlertDialog warning = new AlertDialog.Builder(this).setTitle(t("Unencrypted HTTP connection", "Conexión HTTP sin cifrar"))
                             .setMessage(Imports.origin(address) + "\n\n"
-                                    + "Other people on the network could see or change game data. "
-                                    + "Continue only if you trust the site and network. Do not enter passwords.")
-                            .setNegativeButton("Cancel", null)
-                            .setPositiveButton("Continue", (prompt, button) -> lookupGame(input, url, search, address))
+                                    + t("Other people on the network could see or change game data. Continue only if you trust the site and network. Do not enter passwords.",
+                                    "Otras personas en la red podrían ver o modificar los datos. Continúa solo si confías en la web y la red. No introduzcas contraseñas."))
+                            .setNegativeButton(t("Cancel", "Cancelar"), null)
+                            .setPositiveButton(t("Continue", "Continuar"), (prompt, button) -> lookupGame(input, url, search, address))
                             .show();
                     warning.getButton(AlertDialog.BUTTON_NEGATIVE).requestFocus();
                 } else {
@@ -353,13 +364,20 @@ public final class MainActivity extends Activity implements InputManager.InputDe
     }
 
     private void lookupGame(AlertDialog input, EditText url, Button search, URI address) {
+        url.setError(null);
         search.setEnabled(false);
-        search.setText("Looking up…");
+        search.setText(t("Looking up…", "Buscando…"));
         network.execute(() -> {
             try {
                 Game game = Imports.inspect(address);
                 runOnUiThread(() -> {
                     if (!input.isShowing() || isFinishing()) return;
+                    if (library.duplicate(game.url) != null) {
+                        search.setEnabled(true);
+                        search.setText(t("Look up", "Buscar"));
+                        showDuplicate(url);
+                        return;
+                    }
                     input.dismiss();
                     preview(game);
                 });
@@ -367,31 +385,36 @@ public final class MainActivity extends Activity implements InputManager.InputDe
                 runOnUiThread(() -> {
                     if (!input.isShowing() || isFinishing()) return;
                     search.setEnabled(true);
-                    search.setText("Look up");
-                    url.setError("Could not import: " + error.getMessage());
+                    search.setText(t("Look up", "Buscar"));
+                    url.setError(t("Could not import: ", "No se pudo importar: ") + error.getMessage());
                 });
             }
         });
     }
 
+    private void showDuplicate(EditText url) {
+        url.requestFocus();
+        url.setError(duplicateMessage());
+    }
+
+    private String duplicateMessage() {
+        return t("This game is already in your library.", "Este juego ya está añadido a tu biblioteca.");
+    }
+
     private void preview(Game game) {
-        for (Game saved : library.games) {
-            if (saved.url.equals(game.url)) {
-                toast("This game is already in your library.");
-                return;
-            }
-        }
         LinearLayout panel = style.column();
         panel.setPadding(style.dp(18), style.dp(8), style.dp(18), style.dp(12));
         Frame image = new Frame(game);
         panel.addView(image.view, new LinearLayout.LayoutParams(-1, style.dp(100)));
         loadSavedCover(game, image);
-        style.append(panel, style.text(game.compatible() ? "Gamepad compatible" : "Web page with its own controls", 15, Style.MUTED), 8);
+        style.append(panel, style.text(game.compatible() ? t("Gamepad compatible", "Compatible con mando") : t("Web page with its own controls", "Página web con controles propios"), 15, Style.MUTED), 8);
         new AlertDialog.Builder(this).setTitle(game.title).setView(panel)
-                .setNegativeButton("Cancel", null).setPositiveButton("Save", (dialog, button) -> {
+                .setNegativeButton(t("Cancel", "Cancelar"), null).setPositiveButton(t("Save", "Guardar"), (dialog, button) -> {
                     try {
                         library.add(game);
                         catalog(game);
+                    } catch (Library.DuplicateGame duplicate) {
+                        toast(duplicateMessage());
                     } catch (Exception error) {
                         toast(error.getMessage());
                     }
@@ -403,15 +426,21 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         mappingGame = game;
         mappingProfile = null;
         page();
-        heading("Controls", game.title);
-        appendButton(screen, "‹ Catalog", 16, () -> catalog(game));
-        if (!tv) appendButton(screen, "On-screen controls", 12, () -> bindings(game, "touch", null));
+        heading(t("Controls", "Controles"), game.title);
+        appendButton(screen, t("‹ Catalog", "‹ Catálogo"), 16, () -> catalog(game));
+        if (!tv) appendButton(screen, t("On-screen controls", "Controles en pantalla"), 12, () -> bindings(game, "touch", null));
         Set<String> seen = new java.util.HashSet<>();
         for (InputDevice device : Controls.devices()) {
             String profile = Controls.profile(device);
-            if (seen.add(profile)) appendButton(screen, device.getName(), 12, () -> bindings(game, profile, null));
+            String assigned = library.profiles.assigned(Controls.identity(device));
+            if (!assigned.isEmpty()) {
+                style.append(screen, style.text(device.getName() + " · " + assigned + "\n"
+                        + t("Managed in Controller profiles.", "Se gestiona en Perfiles de mando."), 15, Style.MUTED), 12);
+            } else if (seen.add(profile)) {
+                appendButton(screen, device.getName(), 12, () -> bindings(game, profile, null));
+            }
         }
-        if (seen.isEmpty()) style.append(screen, style.text("Pair a Bluetooth gamepad in your device settings.", 15, Style.MUTED), 12);
+        if (Controls.devices().isEmpty()) style.append(screen, style.text(t("Pair a Bluetooth gamepad in your device settings.", "Empareja un mando Bluetooth en los ajustes del dispositivo."), 15, Style.MUTED), 12);
     }
 
     private void bindings(Game game, String profile, String focusId) {
@@ -419,17 +448,18 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         mappingProfile = profile;
         capture = null;
         page();
-        heading("Map buttons", game.title);
-        appendButton(screen, "‹ Controllers", 16, () -> profiles(game));
+        heading(t("Map buttons", "Asignar botones"), game.title);
+        appendButton(screen, t("‹ Controllers", "‹ Mandos"), 16, () -> profiles(game));
         Map<String, String> mapping = library.bindings(game, profile);
         for (Game.Action action : game.actions) {
             String id = mapping.get(action.id);
-            String label = profile.equals("touch") ? TouchPad.label(id) : buttonLabel(id);
+            String label = id == null || id.isEmpty() ? t("Unassigned", "Sin asignar")
+                    : profile.equals("touch") ? TouchPad.label(id) : settings.label(id);
             Button row = appendButton(screen, action.name + "   ·   " + label, 8,
                     () -> chooseBinding(game, profile, action));
             if (action.id.equals(focusId)) row.requestFocus();
         }
-        appendButton(screen, "Restore game defaults", 14, () -> {
+        appendButton(screen, t("Restore game defaults", "Restaurar controles del juego"), 14, () -> {
             try {
                 library.reset(game, profile);
                 bindings(game, profile, null);
@@ -444,16 +474,16 @@ public final class MainActivity extends Activity implements InputManager.InputDe
             List<String> options = new ArrayList<>(game.touchButtons());
             options.add("");
             String[] labels = new String[options.size()];
-            for (int i = 0; i < options.size(); i++) labels[i] = TouchPad.label(options.get(i));
+            for (int i = 0; i < options.size(); i++) labels[i] = options.get(i).isEmpty() ? t("Unassigned", "Sin asignar") : TouchPad.label(options.get(i));
             new AlertDialog.Builder(this).setTitle(action.name).setItems(labels,
-                    (dialog, position) -> saveBinding(action, options.get(position))).setNegativeButton("Cancel", null).show();
+                    (dialog, position) -> saveBinding(action, options.get(position))).setNegativeButton(t("Cancel", "Cancelar"), null).show();
             return;
         }
         capture = action;
         page();
         heading(action.name, "Press the button or direction you want to assign.");
-        appendButton(screen, "Cancel", 16, () -> bindings(game, profile, action.id));
-        appendButton(screen, "Leave unassigned", 8, () -> saveBinding(action, ""));
+        appendButton(screen, t("Cancel", "Cancelar"), 16, () -> bindings(game, profile, action.id));
+        appendButton(screen, t("Leave unassigned", "Dejar sin asignar"), 8, () -> saveBinding(action, ""));
     }
 
     private void saveBinding(Game.Action action, String button) {
@@ -488,6 +518,7 @@ public final class MainActivity extends Activity implements InputManager.InputDe
     }
 
     private void open(Game game) {
+        clearInputs();
         try {
             PlaySession session = new PlaySession(this, game, tv, Controls.devices().isEmpty());
             play = session;
@@ -499,7 +530,7 @@ public final class MainActivity extends Activity implements InputManager.InputDe
             play.start();
         } catch (Exception error) {
             play = null;
-            toast("Could not open the device browser.");
+            toast(t("Could not open the device browser.", "No se pudo abrir el navegador del dispositivo."));
         }
     }
 
@@ -532,26 +563,37 @@ public final class MainActivity extends Activity implements InputManager.InputDe
 
     private void dispatchActions() {
         if (play != null && play.game.compatible()) play.actions(library.active(play.game, controls.held));
+        if (settings != null) settings.updateTest();
+    }
+
+    private boolean captureInput(InputDevice device, String button) {
+        if (settings != null && settings.consumesInput()) {
+            settings.press(button);
+            return true;
+        }
+        if (capture == null || !Controls.profile(device).equals(mappingProfile) || !Game.BUTTONS.contains(button)) return false;
+        saveBinding(capture, button);
+        return true;
     }
 
     @Override public boolean dispatchKeyEvent(KeyEvent event) {
         InputDevice device = event.getDevice();
         String button = Controls.button(event.getKeyCode());
         if (button != null && Controls.controller(device)) {
-            String profile = Controls.profile(device);
-            if (capture != null && profile.equals(mappingProfile) && event.getAction() == KeyEvent.ACTION_DOWN
-                    && event.getRepeatCount() == 0) {
-                saveBinding(capture, button);
+            String identity = Controls.identity(device);
+            String source = device.getId() + ":key:" + button;
+            boolean down = event.getAction() == KeyEvent.ACTION_DOWN && !event.isCanceled();
+            boolean changed = controls.set(identity, source,
+                    down ? Collections.singleton(button) : Collections.emptySet());
+            boolean alreadyCaptured = down ? capturedKeys.contains(source) : capturedKeys.remove(source);
+            boolean reading = settings != null && settings.consumesInput();
+            if (changed && down && event.getRepeatCount() == 0 && captureInput(device, button)) {
+                capturedKeys.add(source);
+                dispatchActions();
                 return true;
             }
-            if (play != null && play.game.compatible()) {
-                boolean down = event.getAction() == KeyEvent.ACTION_DOWN && !event.isCanceled();
-                if (!down || event.getRepeatCount() == 0) {
-                    if (controls.set(profile, device.getId() + ":key:" + button,
-                            down ? Collections.singleton(button) : Collections.emptySet())) dispatchActions();
-                }
-                return true;
-            }
+            if (changed) dispatchActions();
+            if (alreadyCaptured || reading || (play != null && play.game.compatible() && play.acceptsInput())) return true;
             if (event.getKeyCode() == KeyEvent.KEYCODE_BUTTON_A && event.getAction() != KeyEvent.ACTION_MULTIPLE) {
                 KeyEvent click = new KeyEvent(event.getDownTime(), event.getEventTime(), event.getAction(),
                         KeyEvent.KEYCODE_DPAD_CENTER, event.getRepeatCount(), event.getMetaState(),
@@ -566,20 +608,28 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         InputDevice device = event.getDevice();
         if (Controls.controller(device) && event.isFromSource(InputDevice.SOURCE_JOYSTICK)) {
             Set<String> buttons = Controls.axes(event);
-            String profile = Controls.profile(device);
-            if (capture != null && profile.equals(mappingProfile) && !buttons.isEmpty()) {
-                saveBinding(capture, buttons.iterator().next());
-                return true;
+            String identity = Controls.identity(device);
+            String source = device.getId() + ":axes";
+            Set<String> previous = controls.held.getOrDefault(identity, Collections.emptyMap())
+                    .getOrDefault(source, Collections.emptySet());
+            boolean changed = controls.set(identity, source, buttons);
+            if (changed) {
+                if (previous.isEmpty() && buttons.size() == 1) {
+                    String button = buttons.iterator().next();
+                    if (capture != null && button.startsWith("left_stick_")) {
+                        button = "dpad_" + button.substring("left_stick_".length());
+                    }
+                    captureInput(device, button);
+                }
+                dispatchActions();
             }
-            if (play != null && play.game.compatible()) {
-                if (controls.set(profile, device.getId() + ":axes", buttons)) dispatchActions();
-                return true;
-            }
+            if (play != null || (settings != null && settings.consumesInput())) return true;
         }
         return super.dispatchGenericMotionEvent(event);
     }
 
     @Override public void onInputDeviceAdded(int id) {
+        if (settings != null) settings.devicesChanged();
         if (mappingGame != null && mappingProfile == null) profiles(mappingGame);
     }
 
@@ -587,8 +637,9 @@ public final class MainActivity extends Activity implements InputManager.InputDe
 
     @Override public void onInputDeviceRemoved(int id) {
         controls.removeDevice(id);
+        capturedKeys.removeIf(source -> source.startsWith(id + ":"));
         dispatchActions();
-        if (mappingGame != null && mappingProfile == null) profiles(mappingGame);
+        onInputDeviceAdded(id);
     }
 
     @Override public void onWindowFocusChanged(boolean hasFocus) {
@@ -613,12 +664,14 @@ public final class MainActivity extends Activity implements InputManager.InputDe
         else if (capture != null) bindings(mappingGame, mappingProfile, capture.id);
         else if (mappingProfile != null) profiles(mappingGame);
         else if (mappingGame != null) catalog(mappingGame);
+        else if (settings != null && settings.back()) return;
         else super.onBackPressed();
     }
 
     @Override protected void onDestroy() {
         devices.unregisterInputDeviceListener(this);
         network.shutdownNow();
+        if (settings != null) settings.destroy();
         if (play != null) play.destroy();
         super.onDestroy();
     }

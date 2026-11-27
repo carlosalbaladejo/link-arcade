@@ -5,7 +5,9 @@ sdk="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/Android/Sdk}}"
 bt="$sdk/build-tools/${BUILD_TOOLS_VERSION:-34.0.0}"
 platform="$sdk/platforms/android-34/android.jar"
 keystore="${ARCADE_KEYSTORE:-$HOME/.android/debug.keystore}"
-mkdir -p lib build/classes build/dex build/launcher-assets/controller-test "$(dirname "$keystore")"
+mkdir -p lib build/classes build/dex "$(dirname "$keystore")"
+assets="$(mktemp -d build/assets.XXXXXX)"
+trap 'rm -rf -- "$assets"' EXIT
 jsoup=lib/jsoup-1.18.3.jar
 if [[ ! -f "$jsoup" ]]; then
     curl -fLsS https://repo.maven.apache.org/maven2/org/jsoup/jsoup/1.18.3/jsoup-1.18.3.jar -o "$jsoup"
@@ -16,11 +18,10 @@ if [[ ! -f "$keystore" ]]; then
         -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname 'CN=Android Debug,O=Android,C=US'
 fi
 find build/classes build/dex -type f -delete
-cp docs/test-game/{index.html,game.json,cover.png} build/launcher-assets/controller-test/
-cp docs/default-games.json build/launcher-assets/
+cp docs/default-games.json "$assets/"
 "$bt/aapt2" compile --dir res -o build/resources.zip
 "$bt/aapt2" link --manifest AndroidManifest.xml -I "$platform" --java build \
-    -A build/launcher-assets -o build/base.apk build/resources.zip
+    -A "$assets" -o build/base.apk build/resources.zip
 mapfile -t java_files < <(find src -name '*.java' -print)
 javac --release 8 -cp "$platform:$jsoup" -d build/classes build/app/linkarcade/R.java "${java_files[@]}"
 jar cf build/classes.jar -C build/classes .

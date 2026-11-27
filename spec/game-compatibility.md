@@ -78,6 +78,17 @@ The v1 controls are digital. Normalize D-pad/hat events and common Android contr
 
 Every compatible game declares a `pause` action with `start` as its default. Handle it on press, not continuously while held, and let a second press resume. The game implements the pause: stop local gameplay, or, if a shared online world cannot stop, open a local pause menu and stop sending gameplay inputs. Select has no reserved action; assign it with `"default": "select"` if needed. Other defaults are optional. Defaults unavailable on the on-screen controller leave their actions unbound on that profile until remapped. Give all essential actions an on-screen binding. A manifest must not assign the same default button to multiple actions. If the player reassigns a button, move the binding from its previous action.
 
+### Optional language support
+
+Android Link Arcade sends a JSON string to the top-level game page after load:
+`{"type":"tv-game-language","version":1,"language":"es"}`. Register a window
+`message` listener during startup, validate the version and accept only
+`en` and `es`. Use the message as a locale preference, not as permission
+to perform any other operation. Games that do not support the preference
+can ignore it. The launcher also sends an `Accept-Language` header on its
+direct top-level game request; maintain normal language selection when
+the page is played outside Link Arcade.
+
 ## 3. Make it playable from the sofa
 
 Build for a responsive landscape viewport, with readable text on TV and on phones when the touch controls reduce the available game height. Do not rely on touching the game area, mouse input, or typing to start and play. If the game has a start, pause, or retry screen, support controller actions there too. Keep a keyboard fallback so the game can be tested in a desktop browser.

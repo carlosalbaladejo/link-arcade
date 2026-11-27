@@ -13,13 +13,8 @@ import java.util.Set;
 
 final class Game {
     static final String ASSET_HOST = "appassets.androidplatform.net";
-    static final String TEST_ORIGIN = "https://" + ASSET_HOST;
-    static final String TEST_URL = TEST_ORIGIN + "/controller-test/index.html";
     static final String DRIVE_URL = "https://carlosalbaladejo.github.io/little-drive/";
-    static final Set<String> BUTTONS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-            "dpad_up", "dpad_down", "dpad_left", "dpad_right", "south", "east", "west", "north",
-            "left_shoulder", "right_shoulder", "left_trigger", "right_trigger",
-            "left_stick", "right_stick", "start", "select")));
+    static final Set<String> BUTTONS = Collections.unmodifiableSet(new HashSet<>(Controls.LAYOUT));
     static final List<String> TOUCH = Collections.unmodifiableList(Arrays.asList(
             "dpad_up", "dpad_down", "dpad_left", "dpad_right", "south", "east", "west", "north", "start", "select"));
 
@@ -47,9 +42,25 @@ final class Game {
     }
 
     boolean compatible() { return !actions.isEmpty(); }
-    boolean builtin() { return TEST_URL.equals(url); }
     boolean driving() { return DRIVE_URL.equals(url); }
     List<String> touchButtons() { return driving() ? DRIVING_TOUCH : TOUCH; }
+
+    String languagePreference() {
+        // Existing published games read these preferences before rendering their first screen.
+        // Restrict the adapter to exact game paths; other sites can use the language message.
+        String page = android.net.Uri.parse(url).buildUpon().clearQuery().fragment(null).build().toString();
+        switch (page) {
+            case DRIVE_URL:
+            case DRIVE_URL + "index.html": return "little-drive.language";
+            case "https://carlosalbaladejo.github.io/tidy-robot/":
+            case "https://carlosalbaladejo.github.io/tidy-robot/index.html": return "tidy-robot.language";
+            case "https://carlosalbaladejo.github.io/firemen-route/":
+            case "https://carlosalbaladejo.github.io/firemen-route/index.html": return "firemen-route.language";
+            case "https://iron-caravan-bxf.pages.dev/":
+            case "https://iron-caravan-bxf.pages.dev/index.html": return "ironCaravan.locale.v1";
+            default: return null;
+        }
+    }
 
     static Game fromManifest(String url, String cover, JSONObject manifest) throws JSONException {
         for (java.util.Iterator<String> fields = manifest.keys(); fields.hasNext();) {
